@@ -42,9 +42,9 @@ FA iFA0(.A(cla_out_aebf[0]), .B(cla_out_cgdh[0]), .Cin(sub), .S(Sum[0]), .Cout(c
 FA iFA1(.A(cla_out_aebf[1]), .B(cla_out_cgdh[1]), .Cin(carry[0]), .S(Sum[1]), .Cout(carry[1]));
 FA iFA2(.A(cla_out_aebf[2]), .B(cla_out_cgdh[2]), .Cin(carry[1]), .S(Sum[2]), .Cout(carry[2]));
 FA iFA3(.A(cla_out_aebf[3]), .B(cla_out_cgdh[3]), .Cin(carry[2]), .S(Sum[3]), .Cout(carry[3]));
-FA iFA4(.A(cla_out_aebf[4]), .B(cla_out_cgdh[4]), .Cin(carry[4]), .S(Sum[4]), .Cout(carry[4]));		//Do we ignore the overflow or no? how big is the output of the clas supposed to be?
+//FA iFA4(.A(cla_out_aebf[4]), .B(cla_out_cgdh[4]), .Cin(carry[4]), .S(Sum[4]), .Cout(carry[4]));		//Do we ignore the overflow or no? how big is the output of the clas supposed to be?
 
-assign rd = (carry[4]) ? ({11'b1, Sum[4:0]}):({11'b0, Sum[4:0]});
+assign rd = (Sum[3]) ? ({12'b1, Sum[3:0]}):({12'b0, Sum[3:0]});
 
 
 
