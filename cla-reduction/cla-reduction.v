@@ -3,18 +3,26 @@ module reduction_unit(input [15:0] rs, input [15:0] rt, output [15:0] rd);
 wire [4:0] out_ae; 
 wire [3:0] out_ae_raw;
 wire ae_ovfl;
+wire cla_ae_out;
+
 
 wire [4:0] out_bf; 
 wire [3:0] out_bf_raw;
 wire bf_ovfl;
+wire cla_bf_out;
+
 
 wire [4:0] out_cg; 
 wire [3:0] out_cg_raw;
 wire cg_ovfl;
+wire cla_cg_out;
+
 
 wire [4:0] out_dh; 
 wire [3:0] out_dh_raw;
 wire dh_ovfl;
+wire cla_dh_out;
+
 
 wire [5:0] cla_out_aebf;
 wire [5:0] cla_out_cgdh;
@@ -34,7 +42,14 @@ assign out_cg = {cg_ovfl, out_cg_raw[3:0]};
 assign out_dh = {dh_ovfl, out_dh_raw[3:0]};
 
 
+
+
 ///////////CLA implementation///////////
+cla_4bit cla1(.a(out_ae[3:0]), .b(out_bf[3:0]), .cin(1'b0), .sum(cla_out_aebf[3:0]), .cout(cla_ae_out));
+cla_4bit cla2(.a({3'b0, bf_ovfl1}), .b({3'b0, bf_ovf1}), .cin(cla_ae_out) .sum(cla_out_aebf[5:4]), .cout(cla_bf_out));
+
+cla_4bit cla3(.a(out_cg[3:0]), .b(out_dh[3:0]), .cin(1'b0), .sum(cla_out_cgdh[3:0]), .cout(cla_cg_out));
+cla_4bit cla4(.a({3'b0, cg_ovfl1}), .b({3'b0, dh_ovf1}), .cin(cla_cg_out) .sum(cla_out_cgdh[5:4]), .cout(cout_dh_temp));
 
 
 
