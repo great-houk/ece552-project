@@ -34,7 +34,7 @@ module decode_stage(
         rd = instruction[11:8];
         rs = instruction[7:4];
         rt = instruction[3:0];
-        imm = {{8{instruction[7]}}, instruction[7:0]}; // Sign-extend 8-bit immediate for output
+        imm = {{8{instruction[7]}}, instruction[7:0]}; // Sign-extend 8-bit immediate
         alu_op = 4'b0000;
         alu_src1 = 0;
         alu_src2 = 0;
@@ -109,7 +109,7 @@ module decode_stage(
             4'b1110: begin // PCS
                 alu_op = 4'b1110;
             end
-            4'b1111: begin // HLT
+            4'b1111: begin // HLT (Halt)
                 halt = 1;
             end
         endcase
