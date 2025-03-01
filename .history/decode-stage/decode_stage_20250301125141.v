@@ -97,16 +97,16 @@ module decode_stage(
                 reg_write_en = 1;
                 imm = {instruction[7:0], 8'b0}; // Shift left
             end
-            4'b1100: begin // B
+            4'b1100: begin // B (Unconditional Branch)
                 branch_cond = 1;
                 alu_src1 = 1; // Use PC+2
                 alu_src2 = 1; // Use IMM
             end
-            4'b1101: begin // BR
+            4'b1101: begin // BR (Branch Conditional)
                 branch_cond = 1;
                 alu_op = 4'b1101; // Special opcode for branch evaluation
             end
-            4'b1110: begin // PCS
+            4'b1110: begin // PCS (Procedure Call/Stack)
                 alu_op = 4'b1110;
             end
             4'b1111: begin // HLT (Halt)

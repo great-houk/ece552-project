@@ -106,7 +106,7 @@ module decode_stage(
                 branch_cond = 1;
                 alu_op = 4'b1101; // Special opcode for branch evaluation
             end
-            4'b1110: begin // PCS
+            4'b1110: begin // PCS (Procedure Call/Stack)
                 alu_op = 4'b1110;
             end
             4'b1111: begin // HLT (Halt)
