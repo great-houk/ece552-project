@@ -75,7 +75,7 @@ module execute_stage(
 
 	// Set flags
 	wire [2:0] potential_flags, new_flags;
-	assign potential_flags = {alu_result[15], alu_result == 16'h0, adder_cout};
+	assign potential_flags = {alu_result[15], alu_result == 16'h0, should_sat};
 	assign new_flags = alu_op[3] ? flags : (alu_op[2:1] == 2'h0 ? potential_flags : {flags[2], potential_flags[1], flags[0]});
 
 	dff flags_dff [2:0] (

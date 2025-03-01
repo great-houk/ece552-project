@@ -30,10 +30,7 @@ module cpu(
 		// Immediate value
 		.imm(imm), // 16 bit value, depends on opcode
 		// ALU Control signals
-		// 4 Bit Value
-		// 0: src1+src2, 1: src1-src2, 2: src1^src2, 3: src1 << imm[3:0], 4: src1 >> imm[3:0], 5: src1 >>> imm[3:0] (rotate),
-		// 8: RED, 9: PADDSB, 10: src1+src2 (no flags), 11: {src1[15:8], imm[7:0]}, 12: {imm[7:0], src1[7:0]}, 13: src1
-		.alu_op(alu_op),
+		.alu_op(alu_op), // 4 bit value, look at execute_stage.v for more info
 		.alu_src1(alu_src1), // 0: RS, 1: PC+2
 		.alu_src2(alu_src2), // 0: RT, 1: IMM
 		// Memory Control signals
