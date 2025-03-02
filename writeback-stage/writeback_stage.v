@@ -8,7 +8,8 @@ module writeback_stage(
 	// Assign reg write data
 	assign reg_write_data = reg_write_src ? mem_read : alu_result;
 	// Assign next PC
-	wire should_branch, greater_than;
+	reg should_branch;
+	wire greater_than;
 	assign greater_than = (flags[2] == flags[1]) && (flags[2] == 1'b0);
 	always @* begin
 		case(branch_cond)

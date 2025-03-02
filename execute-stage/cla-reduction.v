@@ -46,10 +46,10 @@ assign out_dh = {dh_ovfl, out_dh_raw[3:0]};
 
 ///////////CLA implementation///////////
 cla_4bit cla1(.a(out_ae[3:0]), .b(out_bf[3:0]), .cin(1'b0), .sum(cla_out_aebf[3:0]), .cout(cla_ae_out));
-cla_4bit cla2(.a({3'b0, bf_ovfl1}), .b({3'b0, bf_ovf1}), .cin(cla_ae_out) .sum(cla_out_aebf[5:4]), .cout(cla_bf_out));
+cla_4bit cla2(.a({3'b0, bf_ovfl1}), .b({3'b0, bf_ovf1}), .cin(cla_ae_out), .sum(cla_out_aebf[5:4]), .cout(cla_bf_out));
 
 cla_4bit cla3(.a(out_cg[3:0]), .b(out_dh[3:0]), .cin(1'b0), .sum(cla_out_cgdh[3:0]), .cout(cla_cg_out));
-cla_4bit cla4(.a({3'b0, cg_ovfl1}), .b({3'b0, dh_ovf1}), .cin(cla_cg_out) .sum(cla_out_cgdh[5:4]), .cout(cout_dh_temp));
+cla_4bit cla4(.a({3'b0, cg_ovfl1}), .b({3'b0, dh_ovf1}), .cin(cla_cg_out), .sum(cla_out_cgdh[5:4]), .cout(cout_dh_temp));
 
 
 

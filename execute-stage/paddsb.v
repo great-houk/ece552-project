@@ -12,7 +12,7 @@ endmodule
 module addsub_4bit(A, B, Sum);
 	input [3:0] A, B;
 	output [3:0] Sum;
-
+	wire [3:0] B_mod;
 	wire [2:0] carry;
 	wire carry_out;
 

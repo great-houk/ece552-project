@@ -72,7 +72,7 @@ module cpu(
 		.mem_write_en(mem_write_en),
 		.mem_read_en(mem_read_en),
 		// Outputs
-		.mem_read(mem_read),
+		.mem_read(mem_read)
 	);
 	// Writeback
 	// Write to register file, and update PC based on ALU flags
@@ -85,10 +85,9 @@ module cpu(
 		.alu_result(alu_result),
 		.mem_read(mem_read),
 		.reg_write_src(reg_write_src),
-
 		// Outputs
 		.next_pc(next_pc),
-		.reg_write_data(reg_write_data),
+		.reg_write_data(reg_write_data)
 	);
 
 	// Shared parts of the computer (not in only one stage)

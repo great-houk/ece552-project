@@ -5,7 +5,7 @@ module execute_stage(
 	input alu_src1, alu_src2,
 	input [3:0] alu_op,
 	// Outputs
-	output [15:0] alu_result,
+	output reg [15:0] alu_result,
 	output [2:0] flags // nzv
 );
 	// Assign sources
@@ -53,7 +53,7 @@ module execute_stage(
 	);
 
 	// Calculate ALU result
-	always(*) begin
+	always @(*) begin
 		// 0: src1+src2, 1: src1-src2, 2: src1^src2, 4: src1 << imm[3:0], 5: src1 >> imm[3:0], 6: src1 >>> imm[3:0] (rotate),
 		// 8: RED, 9: PADDSB, 10: src1+src2 (no flags), 11: {src1[15:8], imm[7:0]}, 12: {imm[7:0], src1[7:0]}, 13: src1
 		case (alu_op)
