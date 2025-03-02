@@ -12,7 +12,7 @@ module cpu(
 		.next_pc(next_pc),
 		// Outputs
 		.instruction(instruction),
-		.pc(pc),
+		.pc_out(pc),
 		.pc_plus2(pc_plus2)
 	);
 	// Decode
