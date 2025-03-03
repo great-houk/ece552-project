@@ -16,6 +16,7 @@ module cpu(
 	wire mem_write_en, mem_read_en;
 	wire reg_write_en, reg_write_src;
 	wire [2:0] branch_cond;
+	wire branch;
 	// Execute
 	wire [15:0] alu_result;
 	wire [2:0] flags; // nzv
@@ -63,6 +64,7 @@ module cpu(
 		.reg_write_en(reg_write_en),
 		.reg_write_src(reg_write_src), // 0: ALU, 1: MEM
 		// Branch Control signals
+		.branch(branch),
 		.branch_cond(branch_cond),
 		// Halt signal
 		.halt(hlt)
@@ -103,6 +105,7 @@ module cpu(
 		// Inputs
 		.clk(clk),
 		.rst_n(rst_n),
+		.branch(branch),
 		.branch_cond(branch_cond),
 		.flags(flags),
 		.alu_result(alu_result),
