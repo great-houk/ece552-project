@@ -20,8 +20,8 @@ wire [3:0] out_dh_raw;
 wire dh_ovfl;
 wire cla_dh_out;
 
-wire [5:0] cla_out_aebf;
-wire [5:0] cla_out_cgdh;
+wire [7:0] cla_out_aebf;
+wire [7:0] cla_out_cgdh;
 
 wire [4:0] carry;
 wire [4:0] Sum;
