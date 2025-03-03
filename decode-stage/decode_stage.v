@@ -20,7 +20,7 @@ module decode_stage(
 		output reg reg_write_en,
         output reg reg_write_src, // 0: ALU, 1: MEM
 		// Branch Control signals
-		output reg branch_cond,
+		output reg [2:0] branch_cond,
 		// Halt signal
 		output reg halt
 	);
