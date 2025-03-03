@@ -91,7 +91,7 @@ module cpu(
 	memory_stage memory_stage(
 		// Inputs
 		.clk(clk),
-		.rst_n(rst_n),
+		.rst(!rst_n),
 		.addr(alu_result),
 		.write_data(reg_rt),
 		.mem_write_en(mem_write_en),
@@ -108,6 +108,7 @@ module cpu(
 		.branch(branch),
 		.branch_cond(branch_cond),
 		.flags(flags),
+		.pc_plus2(pc_plus2),
 		.alu_result(alu_result),
 		.mem_read(mem_read),
 		.reg_write_src(reg_write_src),
@@ -121,7 +122,7 @@ module cpu(
 	RegisterFile register_file(
 		// Inputs
 		.clk(clk),
-		.rst_n(rst_n),
+		.rst(!rst_n),
 		.DstReg(rd),
 		.SrcReg1(rs),
 		.SrcReg2(rt),

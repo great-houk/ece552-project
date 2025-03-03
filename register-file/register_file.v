@@ -1,3 +1,4 @@
+
 module ReadDecoder_4_16(
 	input [3:0] RegId,
 	output [15:0] Wordline
@@ -37,19 +38,18 @@ module Register(
 );
 	wire [15:0] read1, read2;
 	BitCell bitcells [15:0] (clk, rst, D, WriteReg, ReadEnable1, ReadEnable2, read1, read2);
-	assign Bitline1 = (WriteReg & ReadEnable1) ? D : read1;
-	assign Bitline2 = (WriteReg & ReadEnable2) ? D : read2;
+	assign Bitline1 = (WriteReg & ReadEnable1) ? read1 : read1;
+	assign Bitline2 = (WriteReg & ReadEnable2) ? read2 : read2;
 endmodule
 
 module RegisterFile(
-	input clk, rst_n,
+	input clk, rst,
 	input [3:0] SrcReg1, SrcReg2, DstReg,
 	input [15:0] DstData,
 	input WriteReg,
 	inout [15:0] SrcData1, SrcData2
 );
 	wire [15:0] read_wordline1, read_wordline2, write_wordline;
-	wire [15:0] bitlines1, bitlines2;
 
 	ReadDecoder_4_16 read_decoder1(SrcReg1, read_wordline1);
 	ReadDecoder_4_16 read_decoder2(SrcReg2, read_wordline2);
@@ -145,3 +145,4 @@ module RegisterFile_tb();
 	// Clock generation
 	always #5 clk = ~clk;
 endmodule
+
