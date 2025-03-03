@@ -59,7 +59,7 @@ module RegisterFile(
 	Register regs [15:1] (
 		.clk(clk), .rst(rst),
 		.D(DstData),
-		.WriteReg(write_wordline), .ReadEnable1(read_wordline1), .ReadEnable2(read_wordline2),
+		.WriteReg(write_wordline[15:1]), .ReadEnable1(read_wordline1[15:1]), .ReadEnable2(read_wordline2[15:1]),
 		.Bitline1(bitline1), .Bitline2(bitline2)
 	);
 

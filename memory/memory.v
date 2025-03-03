@@ -43,7 +43,10 @@ module memory1c (data_out, data_in, addr, enable, wr, clk, rst);
    reg [15:0]      mem [0:2**ADDR_WIDTH-1];
    reg            loaded;
    
-   assign         data_out = (enable & (~wr))? {mem[addr[ADDR_WIDTH-1 :1]]}: 0; //Read
+   // TODO: Fix this
+   wire [15:0] mem_read_data;
+   assign mem_read_data = mem[addr[ADDR_WIDTH-1 :1]];
+   assign         data_out = (enable & (~wr))? (mem_read_data === 16'hXXXX ? 16'h0 : mem_read_data ): 0; //Read
    initial begin
       loaded = 0;
    end
