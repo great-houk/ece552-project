@@ -1,4 +1,11 @@
 *.mpf
 *.mti
 .*
+*.bak
+*.vcd
+loadfile_all.img
+*.log
+*.trace
+*.wlf
 /work/
+/.history/
