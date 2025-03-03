@@ -75,8 +75,8 @@ module cpu(
 		// Inputs
 		.clk(clk),
 		.rst_n(rst_n),
-		.rs(reg_rs),
-		.rt(reg_rt),
+		.reg_rs(reg_rs),
+		.reg_rt(reg_rt),
 		.imm(imm),
 		.pc_plus2(pc_plus2),
 		.alu_src1(alu_src1),
