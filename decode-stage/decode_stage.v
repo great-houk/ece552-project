@@ -127,6 +127,7 @@ module decode_stage(
 				mem_write_en = 1;
 			end
 			4'b1010: begin // LLB
+				rs = instruction[11:8];
 				alu_op = 4'd11;
 				alu_src1 = 0;
 				alu_src2 = 1;
@@ -135,6 +136,7 @@ module decode_stage(
 				reg_write_src = 0;
 			end
 			4'b1011: begin // LHB 
+				rs = instruction[11:8];
 				alu_op = 4'd12;
 				alu_src1 = 0;
 				alu_src2 = 1;
