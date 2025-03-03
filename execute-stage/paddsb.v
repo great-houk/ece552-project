@@ -9,7 +9,7 @@ module full_adder_1bit(A, B, Cin, Sum, Cout);
 	assign Cout = (half & Cin) | (A & B);
 endmodule
 
-module addsub_4bit(A, B, Sum);
+module add_4bit(A, B, Sum);
 	input [3:0] A, B;
 	output [3:0] Sum;
 	wire [3:0] B_mod;
@@ -29,8 +29,8 @@ module PSA_16bit(A, B, Sum);
 	input [15:0] A, B;
 	output [15:0] Sum;
 
-	addsub_4bit add0 (.A(A[3:0]), .B(B[3:0]), .Sum(Sum[3:0]));
-	addsub_4bit add1 (.A(A[7:4]), .B(B[7:4]), .Sum(Sum[7:4]));
-	addsub_4bit add2 (.A(A[11:8]), .B(B[11:8]), .Sum(Sum[11:8]));
-	addsub_4bit add3 (.A(A[15:12]), .B(B[15:12]), .Sum(Sum[15:12]));
+	add_4bit add0 (.A(A[3:0]), .B(B[3:0]), .Sum(Sum[3:0]));
+	add_4bit add1 (.A(A[7:4]), .B(B[7:4]), .Sum(Sum[7:4]));
+	add_4bit add2 (.A(A[11:8]), .B(B[11:8]), .Sum(Sum[11:8]));
+	add_4bit add3 (.A(A[15:12]), .B(B[15:12]), .Sum(Sum[15:12]));
 endmodule
