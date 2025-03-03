@@ -50,17 +50,21 @@ module RegisterFile(
 	inout [15:0] SrcData1, SrcData2
 );
 	wire [15:0] read_wordline1, read_wordline2, write_wordline;
+	wire [15:0] bitline1, bitline2;
 
 	ReadDecoder_4_16 read_decoder1(SrcReg1, read_wordline1);
 	ReadDecoder_4_16 read_decoder2(SrcReg2, read_wordline2);
 	WriteDecoder_4_16 write_decoder(DstReg, WriteReg, write_wordline);
 
-	Register regs [15:0] (
+	Register regs [15:1] (
 		.clk(clk), .rst(rst),
 		.D(DstData),
 		.WriteReg(write_wordline), .ReadEnable1(read_wordline1), .ReadEnable2(read_wordline2),
-		.Bitline1(SrcData1), .Bitline2(SrcData2)
+		.Bitline1(bitline1), .Bitline2(bitline2)
 	);
+
+	assign SrcData1 = read_wordline1[0] ? 16'h0: bitline1;
+	assign SrcData2 = read_wordline2[0] ? 16'h0: bitline2;
 endmodule
 
 module RegisterFile_tb();

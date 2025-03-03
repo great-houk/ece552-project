@@ -19,7 +19,7 @@ module execute_stage(
 	wire adder_cout, should_sat;
 	cla_16bit cla(
 		.a(alu_src1_data),
-		.b(alu_op[0] ? (alu_src2_data) : (~alu_src2_data)),
+		.b(alu_op[0] ? (~alu_src2_data) : (alu_src2_data)),
 		.cin(alu_op[0]),
 		.sum(adder_res),
 		.cout(adder_cout)
