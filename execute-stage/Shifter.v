@@ -2,7 +2,7 @@ module Shifter (
     output reg [15:0] Shift_Out,  // 16-bit shifted output
     input  [15:0] Shift_In,   // 16-bit input data
     input  [3:0] Shift_Val,  // 4-bit shift amount
-    input  [1:0] Mode       // Shift Mode: 00 = logical left, 01 = logical right, 10 = arithmetic right, 11 = rotate
+    input  [1:0] Mode       // Shift Mode: 00 = logical left, 01 = arithmetic right, 10 = rotate
 );
     reg [15:0] stage1, stage2;
 
@@ -24,23 +24,7 @@ module Shifter (
                 endcase
             end
 
-            2'b01: begin  // Logical Right Shift
-                case (Shift_Val[1:0])  // First stage (shift by 0, 1, 2, or 3)
-                    2'b00: stage1 = Shift_In;
-                    2'b01: stage1 = {1'b0, Shift_In[15:1]};
-                    2'b10: stage1 = {2'b00, Shift_In[15:2]};
-                    2'b11: stage1 = {3'b000, Shift_In[15:3]};
-                endcase
-
-                case (Shift_Val[3:2])  // Second stage (shift by 0, 4, 8, or 12)
-                    2'b00: stage2 = stage1;
-                    2'b01: stage2 = {4'b0000, stage1[15:4]};
-                    2'b10: stage2 = {8'b00000000, stage1[15:8]};
-                    2'b11: stage2 = 16'b0;
-                endcase
-            end
-
-            2'b10: begin  // Arithmetic Right Shift (preserving sign bit)
+            2'b01: begin  // Arithmetic Right Shift (preserving sign bit)
                 case (Shift_Val[1:0])  // First stage (shift by 0, 1, 2, or 3)
                     2'b00: stage1 = Shift_In;
                     2'b01: stage1 = {{1{Shift_In[15]}}, Shift_In[15:1]};
@@ -56,7 +40,7 @@ module Shifter (
                 endcase
             end
 
-            2'b11: begin  // Rotate Shift
+            2'b10: begin  // Rotate Shift
                 case (Shift_Val[1:0])  // First stage (shift by 0, 1, 2, or 3)
                     2'b00: stage1 = Shift_In;
                     2'b01: stage1 = {Shift_In[0], Shift_In[15:1]};
