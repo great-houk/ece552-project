@@ -12,16 +12,15 @@ endmodule
 module add_4bit(A, B, Sum);
 	input [3:0] A, B;
 	output [3:0] Sum;
-	wire [3:0] B_mod;
 	wire [2:0] carry;
 	wire carry_out;
 
 	wire [3:0] result;
-	full_adder_1bit FAs [3:0] (.A(A), .B(B_mod), .Sum(result), .Cin({carry, 1'b0}), .Cout({carry_out, carry}));
+	full_adder_1bit FAs [3:0] (.A(A), .B(B), .Sum(result), .Cin({carry, 1'b0}), .Cout({carry_out, carry}));
 
 	// Saturate
 	wire should_sat;
-	assign should_sat = (A[3] == B_mod[3]) && (A[3] != result[3]);
+	assign should_sat = (A[3] == B[3]) && (A[3] != result[3]);
 	assign Sum = should_sat ? {A[3] ? 4'b1000 : 4'b0111} : result;
 endmodule
 
