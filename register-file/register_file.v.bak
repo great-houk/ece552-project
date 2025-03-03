@@ -42,7 +42,7 @@ module Register(
 endmodule
 
 module RegisterFile(
-	input clk, rst_n,
+	input clk, rst,
 	input [3:0] SrcReg1, SrcReg2, DstReg,
 	input [15:0] DstData,
 	input WriteReg,
