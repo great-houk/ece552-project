@@ -153,9 +153,8 @@ module decode_stage(
 				branch = 1;
 			end
 			4'b1101: begin // BR
-				alu_op = 4'd10; // Add no flags
-				alu_src1 = 1; // Use PC+2
-				alu_src2 = 0; // Use RS
+				alu_op = 4'd13; // Pass RS
+				alu_src1 = 0;
 				branch_cond = instruction[11:9];
 				branch = 1;
 			end
