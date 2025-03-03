@@ -1,8 +1,31 @@
+`default_nettype none
+
 module cpu(
-	input clk, rst_n,
-	output hlt,
-	output [15:0] pc
+	input wire clk, rst_n,
+	output wire hlt,
+	output wire [15:0] pc
 );
+	//// Connections
+	// Fetch
+	wire [15:0] instruction, pc_plus2;
+	// Decode
+	wire [3:0] rd, rs, rt;
+	wire [15:0] imm;
+	wire [3:0] alu_op;
+	wire alu_src1, alu_src2;
+	wire mem_write_en, mem_read_en;
+	wire reg_write_en, reg_write_src;
+	wire [2:0] branch_cond;
+	// Execute
+	wire [15:0] alu_result;
+	wire [2:0] flags; // nzv
+	// Memory
+	wire [15:0] mem_read;
+	// Writeback
+	wire [15:0] next_pc, reg_write_data;
+	// Register File
+	wire [15:0] reg_rs, reg_rt;
+
 	//// Five stages of the pipeline
 	// Fetch
 	fetch_stage fetch_stage(
@@ -42,7 +65,7 @@ module cpu(
 		// Branch Control signals
 		.branch_cond(branch_cond),
 		// Halt signal
-		.halt(halt)
+		.halt(hlt)
 	);
 	// Execute
 	// ALU, flag register, and branch addr calculation
@@ -106,3 +129,5 @@ module cpu(
 		.SrcData2(reg_rt)
 	);
 endmodule
+
+`default_nettype wire
