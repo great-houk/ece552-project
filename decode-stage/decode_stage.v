@@ -119,6 +119,7 @@ module decode_stage(
 				mem_read_en = 1;
 			end
 			4'b1001: begin // SW
+				rt = instruction[11:8];
 				alu_op = 4'd10;
 				alu_src1 = 0;
 				alu_src2 = 1;
