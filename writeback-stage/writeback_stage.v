@@ -1,5 +1,6 @@
 module writeback_stage(
 	input clk, rst_n,
+	input branch, // Branch signal
 	input [2:0] branch_cond, flags, // Flags: NZV
 	input [15:0] pc_plus2, alu_result, mem_read,
 	input reg_write_src, // 0: ALU, 1: MEM
@@ -23,5 +24,5 @@ module writeback_stage(
 			3'b111: should_branch = 1'b1;										// Unconditional
 		endcase
 	end
-	assign next_pc = should_branch ? alu_result : pc_plus2;
+	assign next_pc = (branch & should_branch) ? alu_result : pc_plus2;
 endmodule
