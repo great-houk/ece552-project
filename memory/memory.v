@@ -28,6 +28,48 @@
 //
 //////////////////////////////////////
 
+module memory1c_instr (data_out, data_in, addr, enable, wr, clk, rst);
+
+   parameter ADDR_WIDTH = 16;
+   output  [15:0] data_out;
+   input [15:0]   data_in;
+   input [ADDR_WIDTH-1 :0]   addr;
+   input          enable;
+   input          wr;
+   input          clk;
+   input          rst;
+   wire [15:0]    data_out;
+   
+   reg [15:0]      mem [0:2**ADDR_WIDTH-1];
+   reg            loaded;
+   
+   // TODO: Fix this
+   wire [15:0] mem_read_data;
+   assign mem_read_data = mem[addr[ADDR_WIDTH-1 :1]];
+   assign data_out = (enable & (~wr))? {mem[addr[ADDR_WIDTH-1 :1]]}: 0;
+   initial begin
+      loaded = 0;
+   end
+
+   always @(posedge clk) begin
+      if (rst) begin
+         //load loadfile_all.img
+         if (!loaded) begin
+            $readmemh("loadfile_all.img", mem);
+            loaded = 1;
+         end
+          
+      end
+      else begin
+         if (enable & wr) begin
+	        mem[addr[ADDR_WIDTH-1 :1]] = data_in[15:0];       // The actual write
+         end
+      end
+   end
+endmodule
+
+
+
 module memory1c (data_out, data_in, addr, enable, wr, clk, rst);
 
    parameter ADDR_WIDTH = 16;
@@ -46,7 +88,7 @@ module memory1c (data_out, data_in, addr, enable, wr, clk, rst);
    // TODO: Fix this
    wire [15:0] mem_read_data;
    assign mem_read_data = mem[addr[ADDR_WIDTH-1 :1]];
-   assign         data_out = (enable & (~wr))? (mem_read_data === 16'hXXXX ? 16'h0 : mem_read_data ): 0; //Read
+   assign data_out = (enable & (~wr))? {mem[addr[ADDR_WIDTH-1 :1]]}: 0;
    initial begin
       loaded = 0;
    end
@@ -55,7 +97,7 @@ module memory1c (data_out, data_in, addr, enable, wr, clk, rst);
       if (rst) begin
          //load loadfile_all.img
          if (!loaded) begin
-            $readmemh("loadfile_all.img", mem);
+            $readmemh("loadfile_all_data.img", mem);
             loaded = 1;
          end
           

@@ -24,7 +24,7 @@ assign en = 1;
 assign write = 0;
 dff pc_dff [15:0] (.q(pc_out), .d(next_pc), .wen(1'b1), .clk(clk), .rst(!rst_n));
 //Instatiate instruction memory
-memory1c imem(.data_out(instruction), .data_in(16'h0000), .addr(pc_out), .enable(en), .wr(write), .clk(clk), .rst(!rst_n));
+memory1c_instr imem(.data_out(instruction), .data_in(16'h0000), .addr(pc_out), .enable(en), .wr(write), .clk(clk), .rst(!rst_n));
 
 //Create PC + 2
 cla_16bit pc_plus2_add(.a(pc_out), .b(increment), .cin(1'b0), .sum(pc_plus2), .cout(ovfl_p2));
