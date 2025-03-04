@@ -2,7 +2,7 @@ module memory_stage(input clk, input rst, input [15:0] addr, input [15:0] write_
 
 
 //Instantiate memory read
-memory1c memory_read(.clk(clk), .rst(rst), .enable(mem_read_en), .addr(addr), .wr(mem_write_en), .data_in(write_data), .data_out(mem_read));
+memory1c memory_read(.clk(clk), .rst(rst), .enable(mem_read_en), .addr(addr), .wr(mem_read_en), .data_in(write_data), .data_out(mem_read));
 
 
 endmodule

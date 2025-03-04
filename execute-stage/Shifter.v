@@ -18,11 +18,11 @@ module Shifter (
 				endcase
 
 				case (Shift_Val[3:2])  // Second stage (shift by 0, 4, 8, or 12)
-					2'b00: ShiftOut = stage1;
-					2'b01: ShiftOut = {stage1[11:0], 4'h0};
-					2'b10: ShiftOut = {stage1[7:0], 8'h0};
-					2'b11: ShiftOut = {stage1[3:0], 12'h0};
-					default: ShiftOut = 16'hXXXX;  // Default case (error)
+					2'b00: Shift_Out = stage1;
+					2'b01: Shift_Out = {stage1[11:0], 4'h0};
+					2'b10: Shift_Out = {stage1[7:0], 8'h0};
+					2'b11: Shift_Out = {stage1[3:0], 12'h0};
+					default: Shift_Out = 16'hXXXX;  // Default case (error)
 				endcase
 			end
 
@@ -36,11 +36,11 @@ module Shifter (
 				endcase
 
 				case (Shift_Val[3:2])  // Second stage (shift by 0, 4, 8, or 12)
-					2'b00: ShiftOut = stage1;
-					2'b01: ShiftOut = {{4{Shift_In[15]}}, stage1[15:4]};
-					2'b10: ShiftOut = {{8{Shift_In[15]}}, stage1[15:8]};
-					2'b11: ShiftOut = {{12{Shift_In[15]}}, stage1[15:12]};
-					default: ShiftOut = 16'hXXXX;  // Default case (error)
+					2'b00: Shift_Out = stage1;
+					2'b01: Shift_Out = {{4{Shift_In[15]}}, stage1[15:4]};
+					2'b10: Shift_Out = {{8{Shift_In[15]}}, stage1[15:8]};
+					2'b11: Shift_Out = {{12{Shift_In[15]}}, stage1[15:12]};
+					default: Shift_Out = 16'hXXXX;  // Default case (error)
 				endcase
 			end
 
@@ -54,15 +54,15 @@ module Shifter (
 				endcase
 
 				case (Shift_Val[3:2])  // Second stage (shift by 0, 4, 8, or 12)
-					2'b00: ShiftOut = stage1;
-					2'b01: ShiftOut = {stage1[3:0], stage1[15:4]};
-					2'b10: ShiftOut = {stage1[7:0], stage1[15:8]};
-					2'b11: ShiftOut = {stage1[11:0], stage1[15:12]};
-					default: ShiftOut = 16'hXXXX;  // Default case (error)
+					2'b00: Shift_Out = stage1;
+					2'b01: Shift_Out = {stage1[3:0], stage1[15:4]};
+					2'b10: Shift_Out = {stage1[7:0], stage1[15:8]};
+					2'b11: Shift_Out = {stage1[11:0], stage1[15:12]};
+					default: Shift_Out = 16'hXXXX;  // Default case (error)
 				endcase
 			end
 
-			default: ShiftOut = 16'hXXXX;  // Default case (error)
+			default: Shift_Out = 16'hXXXX;  // Default case (error)
 		endcase
 	end
 endmodule
