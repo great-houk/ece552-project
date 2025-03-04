@@ -125,7 +125,7 @@ module decode_stage(
 				alu_src2 = 1;
 				imm = {{11{instruction[3]}}, instruction[3:0], 1'b0}; // 4 bit imm << 1
 				mem_write_en = 1;
-				mem_read_en = 1;
+				mem_read_en = 1;//different
 			end
 			4'b1010: begin // LLB
 				rs = instruction[11:8];
