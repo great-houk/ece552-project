@@ -1,30 +1,30 @@
 module decode_stage(
-		input wire clk, rst_n,
-		input wire [15:0] instruction,
-		// Outputs
-		// Register file read data
-		output reg [3:0] rd,  // Bits 11-8
-		output reg [3:0] rs,  // Bits 7-4
-		output reg [3:0] rt,  // Bits 3-0 (except SW, when it's 11-8)
-		output reg [15:0] imm, // Immediate value
+	input wire clk, rst_n,
+	input wire [15:0] instruction,
+	// Outputs
+	// Register file read data
+	output reg [3:0] rd,  // Bits 11-8
+	output reg [3:0] rs,  // Bits 7-4
+	output reg [3:0] rt,  // Bits 3-0 (except SW, when it's 11-8)
+	output reg [15:0] imm, // Immediate value
 
-		 // ALU Control signals
-		output reg [3:0] alu_op,  // ALU operation
-		output reg alu_src1,	  // 0: RS, 1: PC+2
-		output reg alu_src2,	  // 0: RT, 1: IMM
+	// ALU Control signals
+	output reg [3:0] alu_op,  // ALU operation
+	output reg alu_src1,	  // 0: RS, 1: PC+2
+	output reg alu_src2,	  // 0: RT, 1: IMM
 
-		// Memory Control signals
-		output reg mem_write_en,
-		output reg mem_read_en,
-		// Register File Control signals
-		output reg reg_write_en,
-		output reg reg_write_src, // 0: ALU, 1: MEM
-		// Branch Control signals
-		output reg [2:0] branch_cond,
-		output reg branch,
-		// Halt signal
-		output reg halt
-	);
+	// Memory Control signals
+	output reg mem_write_en,
+	output reg mem_read_en,
+	// Register File Control signals
+	output reg reg_write_en,
+	output reg reg_write_src, // 0: ALU, 1: MEM
+	// Branch Control signals
+	output reg [2:0] branch_cond,
+	output reg branch,
+	// Halt signal
+	output reg halt
+);
 
 
 	wire [3:0] opcode;
@@ -167,7 +167,23 @@ module decode_stage(
 			4'b1111: begin // HLT
 				halt = 1;
 			end
+			default: begin
+				// Invalid opcode
+				rd = 'x;
+				rs = 'x;
+				rt = 'x;
+				imm = 'x;
+				alu_op = 'x;
+				alu_src1 = 'x;
+				alu_src2 = 'x;
+				mem_write_en = 'x;
+				mem_read_en = 'x;
+				reg_write_en = 'x;
+				reg_write_src = 'x;
+				branch = 'x;
+				branch_cond = 'x;
+				halt = 'x;
+			end
 		endcase
 	end
-
 endmodule

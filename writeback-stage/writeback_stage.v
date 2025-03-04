@@ -22,6 +22,7 @@ module writeback_stage(
 			3'b101: should_branch = (flags[2] == 1'b1) | (flags[1] == 1'b1);	// Less Than or Equal (N = 1 or Z = 1)
 			3'b110: should_branch = flags[0] == 1'b1;							// Overflow (V = 1)
 			3'b111: should_branch = 1'b1;										// Unconditional
+			default: should_branch = 1'bx;										// Default case (error)
 		endcase
 	end
 	assign next_pc = (branch & should_branch) ? alu_result : pc_plus2;
