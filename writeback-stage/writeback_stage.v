@@ -4,7 +4,8 @@ module writeback_stage(
 	input [2:0] branch_cond, flags, // Flags: NZV
 	input [15:0] pc_plus2, alu_result, mem_read,
 	input reg_write_src, // 0: ALU, 1: MEM
-	output [15:0] next_pc, reg_write_data
+	output [15:0] next_pc, reg_write_data,
+	output branching
 );
 	// Assign reg write data
 	assign reg_write_data = reg_write_src ? mem_read : alu_result;
@@ -12,6 +13,8 @@ module writeback_stage(
 	reg should_branch;
 	wire greater_than;
 	assign greater_than = (flags[2] == flags[1]) && (flags[2] == 1'b0);
+
+	// Check if branch condition is met
 	always @* begin
 		case(branch_cond)
 			3'b000: should_branch = flags[1] == 1'b0;							// Not Equal (Z = 0)
@@ -25,5 +28,7 @@ module writeback_stage(
 			default: should_branch = 1'bx;										// Default case (error)
 		endcase
 	end
-	assign next_pc = (branch & should_branch) ? alu_result : pc_plus2;
+
+	assign branching = branch & should_branch;
+	assign next_pc = branching ? alu_result : pc_plus2;
 endmodule

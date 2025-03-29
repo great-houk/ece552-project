@@ -1,6 +1,7 @@
 module decode_stage(
 	input wire clk, rst_n,
 	input wire [15:0] instruction,
+	input wire [15:0] f_pc_plus2,
 	// Outputs
 	// Register file read data
 	output reg [3:0] rd,  // Bits 11-8
@@ -23,19 +24,39 @@ module decode_stage(
 	output reg [2:0] branch_cond,
 	output reg branch,
 	// Halt signal
-	output reg halt
+	output reg halt,
+	// Passthrough
+	output [15:0] d_pc_plus2,
 );
+	// Input FFs
+	wire [15:0] instruction_ff;
+	dff instr_dff [15:0] (
+		.clk(clk),
+		.rst(~rst_n),
+		.d(instruction),
+		.q(instruction_ff),
+		.wen(1'b1)
+	);
 
+	// Passthrough FFs
+	dff pc_plus2 [15:0] (
+		.clk(clk),
+		.rst(~rst_n),
+		.d(f_pc_plus2),
+		.q(d_pc_plus2),
+		.wen(1'b1)
+	);
 
+	// Decode instruction
 	wire [3:0] opcode;
-	assign opcode = instruction[15:12];
+	assign opcode = instruction_ff[15:12];
 
 	always @(*) begin
 		// Default values
-		rd = instruction[11:8];
-		rs = instruction[7:4];
-		rt = instruction[3:0];
-		imm = {{12{instruction[3]}}, instruction[3:0]}; // Sign extend 4 bit imm
+		rd = instruction_ff[11:8];
+		rs = instruction_ff[7:4];
+		rt = instruction_ff[3:0];
+		imm = {{12{instruction_ff[3]}}, instruction_ff[3:0]}; // Sign extend 4 bit imm
 
 		alu_op = 'x;
 		alu_src1 = 'x;
@@ -113,35 +134,35 @@ module decode_stage(
 				alu_op = 4'd10;
 				alu_src1 = 0;
 				alu_src2 = 1;
-				imm = {{11{instruction[3]}}, instruction[3:0], 1'b0}; // 4 bit imm << 1
+				imm = {{11{instruction_ff[3]}}, instruction_ff[3:0], 1'b0}; // 4 bit imm << 1
 				reg_write_en = 1;
 				reg_write_src = 1;
 				mem_read_en = 1;
 			end
 			4'b1001: begin // SW
-				rt = instruction[11:8];
+				rt = instruction_ff[11:8];
 				alu_op = 4'd10;
 				alu_src1 = 0;
 				alu_src2 = 1;
-				imm = {{11{instruction[3]}}, instruction[3:0], 1'b0}; // 4 bit imm << 1
+				imm = {{11{instruction_ff[3]}}, instruction_ff[3:0], 1'b0}; // 4 bit imm << 1
 				mem_write_en = 1;
 				mem_read_en = 1;//different
 			end
 			4'b1010: begin // LLB
-				rs = instruction[11:8];
+				rs = instruction_ff[11:8];
 				alu_op = 4'd11;
 				alu_src1 = 0;
 				alu_src2 = 1;
-				imm = {8'b0, instruction[7:0]}; // Zero-extend
+				imm = {8'b0, instruction_ff[7:0]}; // Zero-extend
 				reg_write_en = 1;
 				reg_write_src = 0;
 			end
 			4'b1011: begin // LHB 
-				rs = instruction[11:8];
+				rs = instruction_ff[11:8];
 				alu_op = 4'd12;
 				alu_src1 = 0;
 				alu_src2 = 1;
-				imm = {8'b0, instruction[7:0]}; // Zero-extend
+				imm = {8'b0, instruction_ff[7:0]}; // Zero-extend
 				reg_write_en = 1;
 				reg_write_src = 0;
 			end
@@ -149,14 +170,14 @@ module decode_stage(
 				alu_op = 4'd10; // Add no flags
 				alu_src1 = 1; // Use PC+2
 				alu_src2 = 1; // Use IMM for calculation
-				imm = {{6{instruction[8]}}, instruction[8:0], 1'b0}; // 9 bit imm << 1
-				branch_cond = instruction[11:9];
+				imm = {{6{instruction_ff[8]}}, instruction_ff[8:0], 1'b0}; // 9 bit imm << 1
+				branch_cond = instruction_ff[11:9];
 				branch = 1;
 			end
 			4'b1101: begin // BR
 				alu_op = 4'd13; // Pass RS
 				alu_src1 = 0;
-				branch_cond = instruction[11:9];
+				branch_cond = instruction_ff[11:9];
 				branch = 1;
 			end
 			4'b1110: begin // PCS
