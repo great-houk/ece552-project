@@ -57,7 +57,7 @@ module writeback_stage(
 		.wen(1'b1)
 	);
 	wire reg_write_src_ff;
-	dff reg_write_src_dff [0] (
+	dff reg_write_src_dff (
 		.clk(clk),
 		.rst(~rst_n),
 		.d(reg_write_src),
