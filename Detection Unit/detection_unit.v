@@ -8,7 +8,10 @@ module detection_unit(
 
 //if flags in execute stage match flags for alu operation, use case statement
 
-assign stall_sig = branch & ()
+
+wire temp;
+assign temp = 
+
 
 
 

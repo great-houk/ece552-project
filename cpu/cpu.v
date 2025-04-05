@@ -95,8 +95,7 @@ module cpu(
 		.e_rd(e_rd),
 		.m_rd(m_rd),
 		.alu_op(d_alu_op),
-		.branch(),
-
+		.hazard_sig(stall)
 	);
 
 
