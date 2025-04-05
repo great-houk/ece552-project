@@ -1,7 +1,9 @@
 module decode_stage(
 	input wire clk, rst_n,
 	input wire [15:0] instruction,
-	input wire [15:0] f_pc_plus2,
+	input wire [15:0] pc_plus2,
+	input wire [2:0] flags, // NZV
+	input wire [15:0] reg_rs,
 	// Outputs
 	// Register file read data
 	output reg [3:0] rd,  // Bits 11-8
@@ -20,9 +22,9 @@ module decode_stage(
 	// Register File Control signals
 	output reg reg_write_en,
 	output reg reg_write_src, // 0: ALU, 1: MEM
-	// Branch Control signals
-	output reg [2:0] branch_cond,
+	// Branch Control signal
 	output reg branch,
+	output [15:0] next_pc,
 	// Halt signal
 	output reg halt,
 	// Passthrough
@@ -208,4 +210,35 @@ module decode_stage(
 			end
 		endcase
 	end
+
+	// Branch logic
+	reg should_branch;
+	wire greater_than;
+	assign greater_than = (flags[2] == flags[1]) && (flags[2] == 1'b0);
+	// Check if branch condition is met
+	always @* begin
+		case(branch_cond_ff)
+			3'b000: should_branch = flags[1] == 1'b0;							// Not Equal (Z = 0)
+			3'b001: should_branch = flags[1] == 1'b1;							// Equal (Z = 1)
+			3'b010: should_branch = greater_than;								// Greater Than (Z = N = 0)
+			3'b011: should_branch = flags[2] == 1'b1;							// Less Than (N = 1)
+			3'b100: should_branch = (flags[1] == 1'b1) | greater_than;			// Greater Than or Equal (Z = 1 or Z = N = 0)
+			3'b101: should_branch = (flags[2] == 1'b1) | (flags[1] == 1'b1);	// Less Than or Equal (N = 1 or Z = 1)
+			3'b110: should_branch = flags[0] == 1'b1;							// Overflow (V = 1)
+			3'b111: should_branch = 1'b1;										// Unconditional
+			default: should_branch = 1'bx;										// Default case (error)
+		endcase
+	end
+
+	// Calculate next PC
+	wire [15:0] pc_plus_imm;
+	cla_16bit pc_plus_imm_adder (
+		.a(pc_plus2_ff),
+		.b(imm),
+		.cin(1'b0),
+		.sum(pc_plus_imm)
+	);
+
+	assign branching = branch & should_branch;
+	assign next_pc = branching ? (opcode[0] ? reg_rs : pc_plus_imm) : pc_plus2_ff;
 endmodule

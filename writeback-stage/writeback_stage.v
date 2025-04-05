@@ -67,29 +67,4 @@ module writeback_stage(
 
 	// Assign reg write data
 	assign reg_write_data = reg_write_src_ff ? mem_read_ff : alu_result_ff;
-	// Assign next PC
-	reg should_branch;
-	wire greater_than;
-	assign greater_than = (flags_ff[2] == flags_ff[1]) && (flags_ff[2] == 1'b0);
-
-	
-
-
-	// Check if branch condition is met
-	always @* begin
-		case(branch_cond_ff)
-			3'b000: should_branch = flags_ff[1] == 1'b0;							// Not Equal (Z = 0)
-			3'b001: should_branch = flags_ff[1] == 1'b1;							// Equal (Z = 1)
-			3'b010: should_branch = greater_than;								// Greater Than (Z = N = 0)
-			3'b011: should_branch = flags_ff[2] == 1'b1;							// Less Than (N = 1)
-			3'b100: should_branch = (flags_ff[1] == 1'b1) | greater_than;			// Greater Than or Equal (Z = 1 or Z = N = 0)
-			3'b101: should_branch = (flags_ff[2] == 1'b1) | (flags_ff[1] == 1'b1);	// Less Than or Equal (N = 1 or Z = 1)
-			3'b110: should_branch = flags_ff[0] == 1'b1;							// Overflow (V = 1)
-			3'b111: should_branch = 1'b1;										// Unconditional
-			default: should_branch = 1'bx;										// Default case (error)
-		endcase
-	end
-
-	assign branching = branch_ff & should_branch;
-	assign next_pc = branching ? alu_result_ff : pc_plus2_ff;
 endmodule

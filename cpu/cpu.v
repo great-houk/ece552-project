@@ -15,8 +15,8 @@ module cpu(
 	wire d_alu_src1, d_alu_src2;
 	wire d_mem_write_en, d_mem_read_en;
 	wire d_reg_write_en, d_reg_write_src;
-	wire [2:0] d_branch_cond;
 	wire d_branch;
+	wire [15:0] d_next_pc;
 	wire [15:0] d_pc_plus2;
 	// Register File outputs
 	wire [15:0] d_reg_rs, d_reg_rt;
@@ -27,19 +27,13 @@ module cpu(
 	wire [15:0] e_reg_rt;
 	wire e_mem_write_en, e_mem_read_en;
 	wire e_reg_write_en, e_reg_write_src;
-	wire [2:0] e_branch_cond;
-	wire e_branch;
-	wire [15:0] e_pc_plus2;
 	// Memory outputs
 	wire [15:0] m_mem_read;
 	wire [15:0] m_alu_result;
-	wire [2:0] m_flags; // nzv
 	wire [3:0] m_rd, m_rs, m_rt;
 	wire m_reg_write_en, m_reg_write_src;
-	wire [15:0] m_pc_plus2;
 	// Writeback outputs
-	wire [15:0] w_next_pc, w_reg_write_data;
-	wire w_branching;
+	wire [15:0] w_reg_write_data;
 
 	//// Five stages of the pipeline
 	// Fetch
@@ -47,7 +41,7 @@ module cpu(
 		// Inputs
 		.clk(clk),
 		.rst_n(rst_n),
-		.next_pc(w_next_pc),
+		.next_pc(d_next_pc),
 		.branching(w_branching),
 		// Outputs
 		.instruction(f_instruction),
@@ -61,8 +55,8 @@ module cpu(
 		.clk(clk),
 		.rst_n(rst_n),
 		.instruction(f_instruction),
-		// Passthrough
-		.f_pc_plus2(f_pc_plus2),
+		.pc_plus2(f_pc_plus2),
+		.reg_rs(d_reg_rs),
 		// Outputs
 		// Register file read data
 		.rd(d_rd), // Bits 11-8
@@ -80,9 +74,9 @@ module cpu(
 		// Register File Control signals
 		.reg_write_en(d_reg_write_en),
 		.reg_write_src(d_reg_write_src), // 0: ALU, 1: MEM
-		// Branch Control signals
+		// Branch logic signals
 		.branch(d_branch),
-		.branch_cond(d_branch_cond),
+		.next_pc(d_next_pc),
 		// Halt signal
 		.halt(hlt),
 		// Passthrough
