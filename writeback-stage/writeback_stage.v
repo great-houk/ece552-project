@@ -7,73 +7,63 @@ module writeback_stage(
 	output [15:0] next_pc, reg_write_data,
 	output branching
 );
-
-
 	// Input FFs
-	// branch
 	wire branch_ff;
-	dff instr_dff[0](
+	dff branch_dff (
 		.clk(clk),
 		.rst(~rst_n),
 		.d(branch),
 		.q(branch_ff),
 		.wen(1'b1)
 	);
-	// branch_cond
 	wire [2:0] branch_cond_ff;
-	dff instr_dff [15:0] (
+	dff branch_cond_dff [15:0] (
 		.clk(clk),
 		.rst(~rst_n),
 		.d(branch_cond),
 		.q(branch_cond_ff),
 		.wen(1'b1)
 	);
-	// flags
 	wire [2:0] flags_ff;
-	dff instr_dff [2:0] (
+	dff flags_dff [2:0] (
 		.clk(clk),
 		.rst(~rst_n),
 		.d(flags),
 		.q(flags_ff),
 		.wen(1'b1)
 	);
-	// pc_plus2
 	wire [15:0] pc_plus2_ff;
-	dff instr_dff [15:0] (
+	dff pc_plus2_dff [15:0] (
 		.clk(clk),
 		.rst(~rst_n),
 		.d(pc_plus2),
 		.q(pc_plus2_ff),
 		.wen(1'b1)
 	);
-	// alu_result
 	wire [15:0] alu_result_ff;
-	dff instr_dff [15:0] (
+	dff alu_result_dff [15:0] (
 		.clk(clk),
 		.rst(~rst_n),
 		.d(alu_result),
 		.q(alu_result_ff),
 		.wen(1'b1)
 	);
-	// mem_read
 	wire [15:0] mem_read_ff;
-	dff instr_dff [15:0] (
+	dff mem_read_dff [15:0] (
 		.clk(clk),
 		.rst(~rst_n),
 		.d(mem_read),
 		.q(mem_read_ff),
 		.wen(1'b1)
 	);
-	// reg_write_src
 	wire reg_write_src_ff;
-	dff instr_dff [0] (
+	dff reg_write_src_dff [0] (
 		.clk(clk),
 		.rst(~rst_n),
 		.d(reg_write_src),
 		.q(reg_write_src_ff),
 		.wen(1'b1)
 	);
-
 
 	// Assign reg write data
 	assign reg_write_data = reg_write_src_ff ? mem_read_ff : alu_result_ff;
