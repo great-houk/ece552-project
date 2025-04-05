@@ -132,14 +132,18 @@ module cpu(
 		.e_rd(e_rd),
 		.e_rs(e_rs),
 		.e_rt(e_rt),
-		.e_flags(e_flags),
-		.alu_rslt(e_alu_result),
+		.e_alu_rslt(e_alu_result),
+		.e_reg_write_en(e_reg_write_en),
+		.e_reg_write_src(e_reg_write_src),
 		// Outputs
 		.mem_read(m_mem_read),
-		.alu_rslt_out(m_alu_result),
+		// Passthrough
 		.m_rd(m_rd),
 		.m_rs(m_rs),
 		.m_rt(m_rt),
+		.m_alu_rslt(m_alu_result),
+		.m_reg_write_en(m_reg_write_en),
+		.m_reg_write_src(m_reg_write_src)
 	);
 	// Writeback
 	// Write to register file, and update PC based on ALU flags
@@ -150,8 +154,11 @@ module cpu(
 		.alu_result(m_alu_result),
 		.mem_read(m_mem_read),
 		.reg_write_src(m_reg_write_src),
+		.m_reg_write_en(m_reg_write_en),
 		// Outputs
 		.reg_write_data(w_reg_write_data),
+		.w_reg_write_en(w_reg_write_en),
+		.rd(w_rd)
 	);
 
 	// Shared parts of the computer (not in only one stage)
@@ -160,11 +167,11 @@ module cpu(
 		// Inputs
 		.clk(clk),
 		.rst(~rst_n),
-		.DstReg(rd),
-		.SrcReg1(rs),
-		.SrcReg2(rt),
-		.DstData(reg_write_data),
-		.WriteReg(reg_write_en),
+		.DstReg(w_rd),
+		.SrcReg1(d_rs),
+		.SrcReg2(d_rt),
+		.DstData(w_reg_write_data),
+		.WriteReg(w_reg_write_en),
 		// Outputs
 		.SrcData1(d_reg_rs),
 		.SrcData2(d_reg_rt)
