@@ -82,6 +82,20 @@ module cpu(
 		// Passthrough
 		.d_pc_plus2(d_pc_plus2)
 	);
+
+	//Detection_unit
+	detection_unit detection_unit(
+		//Inputs
+		.curr_rs(d_rs),
+		.curr_rt(d_rt),
+		.e_rd(e_rd),
+		.m_rd(m_rd),
+		.alu_op(d_alu_op),
+		.branch(),
+
+	);
+
+
 	// Execute
 	// ALU, flag register, and branch addr calculation
 	execute_stage execute_stage(
@@ -116,7 +130,7 @@ module cpu(
 		.e_mem_write_en(e_mem_write_en),
 		.e_mem_read_en(e_mem_read_en),
 		.e_reg_write_en(e_reg_write_en),
-		.e_reg_write_src(e_reg_write_src),
+		.e_reg_write_src(e_reg_write_src)
 	);
 	// Memory
 	// Read and write to memory
@@ -132,14 +146,13 @@ module cpu(
 		.e_rd(e_rd),
 		.e_rs(e_rs),
 		.e_rt(e_rt),
-		.e_flags(e_flags),
 		.alu_rslt(e_alu_result),
 		// Outputs
 		.mem_read(m_mem_read),
 		.alu_rslt_out(m_alu_result),
 		.m_rd(m_rd),
 		.m_rs(m_rs),
-		.m_rt(m_rt),
+		.m_rt(m_rt)
 	);
 	// Writeback
 	// Write to register file, and update PC based on ALU flags
@@ -151,7 +164,7 @@ module cpu(
 		.mem_read(m_mem_read),
 		.reg_write_src(m_reg_write_src),
 		// Outputs
-		.reg_write_data(w_reg_write_data),
+		.reg_write_data(w_reg_write_data)
 	);
 
 	// Shared parts of the computer (not in only one stage)

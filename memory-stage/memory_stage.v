@@ -4,12 +4,10 @@ module memory_stage(
 	input [15:0] write_data, 
 	input mem_write_en, mem_read_en,
 	input [15:0] alu_rslt,
-	input [15:0] instruction,
-	input [3:0] e_rd, e_rs, e_rt, e_flags,
-	input [15:0] instruction_out, 
+	input [3:0] e_rd, e_rs, e_rt,
 	output [15:0] mem_read,
 	output [15:0] alu_rslt_out,
-	output [3:0] m_rd, m_rs, m_rt, m_flags
+	output [3:0] m_rd, m_rs, m_rt
 );
 
 
@@ -52,14 +50,6 @@ dff pass_through_dff(
 	.rst_n(~rst_n),
 	.d(e_rt),
 	.q(m_rt),
-	.wen(1'b1)
-	);
-
-	dff m_flags_dff(
-	.clk(clk),
-	.rst_n(~rst_n),
-	.d(e_flags),
-	.q(m_flags),
 	.wen(1'b1)
 	);
 
