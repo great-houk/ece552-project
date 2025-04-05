@@ -34,7 +34,8 @@ module cpu(
 	wire m_reg_write_en, m_reg_write_src;
 	// Writeback outputs
 	wire [15:0] w_reg_write_data;
-
+	wire w_reg_write_en;
+	wire [3:0] w_rd;
 	//// Five stages of the pipeline
 	// Fetch
 	fetch_stage fetch_stage(
@@ -116,7 +117,7 @@ module cpu(
 		.e_mem_write_en(e_mem_write_en),
 		.e_mem_read_en(e_mem_read_en),
 		.e_reg_write_en(e_reg_write_en),
-		.e_reg_write_src(e_reg_write_src),
+		.e_reg_write_src(e_reg_write_src)
 	);
 	// Memory
 	// Read and write to memory
