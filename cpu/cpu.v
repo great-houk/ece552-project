@@ -36,12 +36,14 @@ module cpu(
 	wire [15:0] w_reg_write_data;
 	wire w_reg_write_en;
 	wire [3:0] w_rd;
+	wire stall;
 	//// Five stages of the pipeline
 	// Fetch
 	fetch_stage fetch_stage(
 		// Inputs
 		.clk(clk),
 		.rst_n(rst_n),
+		.stall(stall),
 		.next_pc(d_next_pc),
 		.branching(d_branch),
 		// Outputs
@@ -55,6 +57,7 @@ module cpu(
 		// Inputs
 		.clk(clk),
 		.rst_n(rst_n),
+		.stall(stall),
 		.instruction(f_instruction),
 		.pc_plus2(f_pc_plus2),
 		.reg_rs(d_reg_rs),

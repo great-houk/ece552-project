@@ -1,5 +1,5 @@
 module decode_stage(
-	input wire clk, rst_n,
+	input wire clk, rst_n, stall,
 	input wire [15:0] instruction,
 	input wire [15:0] pc_plus2,
 	input wire [2:0] flags, // NZV
@@ -37,7 +37,7 @@ module decode_stage(
 		.rst(~rst_n),
 		.d(instruction),
 		.q(instruction_ff),
-		.wen(1'b1)
+		.wen(stall)
 	);
 
 	// Passthrough FFs
@@ -46,7 +46,7 @@ module decode_stage(
 		.rst(~rst_n),
 		.d(f_pc_plus2),
 		.q(d_pc_plus2),
-		.wen(1'b1)
+		.wen(stall)
 	);
 
 	// Decode instruction
