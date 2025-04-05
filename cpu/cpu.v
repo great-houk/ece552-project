@@ -115,7 +115,7 @@ module cpu(
 		.d_pc_plus2(d_pc_plus2),
 		// Outputs
 		.alu_result(e_alu_result),
-		.flags(e_flags) // nzv
+		.flags(e_flags), // nzv
 		// Passthrough
 		.e_rd(e_rd),
 		.e_rs(e_rs),
@@ -141,7 +141,7 @@ module cpu(
 		.mem_read_en(e_mem_read_en),
 		//Passthrough
 		.instruction(e_pc_plus2),
-		.instruction_ff(m_pc_plus2),
+		.instruction_out(m_pc_plus2),
 		.e_rd(e_rd),
 		.e_rs(e_rs),
 		.e_rt(e_rt),

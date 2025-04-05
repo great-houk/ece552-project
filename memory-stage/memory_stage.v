@@ -6,7 +6,7 @@ module memory_stage(
 	input [15:0] alu_rslt,
 	input [15:0] instruction,
 	input [3:0] e_rd, e_rs, e_rt, e_flags,
-	input [15:0] instruction_ff, 
+	input [15:0] instruction_out, 
 	output [15:0] mem_read,
 	output [15:0] alu_rslt_out,
 	output [3:0] m_rd, m_rs, m_rt, m_flags
@@ -14,7 +14,7 @@ module memory_stage(
 
 
 wire [15:0] mem_alu_ff;
-dff mem_alu_ff(
+dff mem_alu_dff(
 	.clk(clk),
 	.rst_n(~rst_n),
 	.d(alu_result),
@@ -23,16 +23,15 @@ dff mem_alu_ff(
 	);
 
 wire [15:0] pass_through_ff;
-dff pass_through_ff(
+dff pass_through_dff(
 	.clk(clk),
 	.rst_n(~rst_n),
 	.d(instruction),
-	.q(instruction_ff),
+	.q(instruction_out),
 	.wen(1'b1)
 	);
 
-	wire [3:0] m_rd, m_rs, m_rd, m_flags;
-	dff m_rd(
+	dff m_rd_dff(
 	.clk(clk),
 	.rst_n(~rst_n),
 	.d(e_rd),
@@ -40,7 +39,7 @@ dff pass_through_ff(
 	.wen(1'b1)
 	);
 
-	dff m_rs(
+	dff m_rs_dff(
 	.clk(clk),
 	.rst_n(~rst_n),
 	.d(e_rs),
@@ -48,7 +47,7 @@ dff pass_through_ff(
 	.wen(1'b1)
 	);
 
-	dff m_rt(
+	dff m_rt_dff(
 	.clk(clk),
 	.rst_n(~rst_n),
 	.d(e_rt),
@@ -56,7 +55,7 @@ dff pass_through_ff(
 	.wen(1'b1)
 	);
 
-	dff m_flags(
+	dff m_flags_dff(
 	.clk(clk),
 	.rst_n(~rst_n),
 	.d(e_flags),
@@ -65,7 +64,7 @@ dff pass_through_ff(
 	);
 
 // Instantiate memory read
-memory1c memory_read (
+memory1c memory_read(
 	.clk(clk), 
 	.rst(~rst_n), 
 	.enable(mem_read_en), 
