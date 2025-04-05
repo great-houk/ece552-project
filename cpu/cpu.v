@@ -150,26 +150,18 @@ module cpu(
 		.e_rd(e_rd),
 		.e_rs(e_rs),
 		.e_rt(e_rt),
-<<<<<<< HEAD
-		.alu_rslt(e_alu_result),
-=======
 		.e_alu_rslt(e_alu_result),
 		.e_reg_write_en(e_reg_write_en),
 		.e_reg_write_src(e_reg_write_src),
->>>>>>> 495850bf2a7e0dd085753c7a92a340aee4c4bc9b
 		// Outputs
 		.mem_read(m_mem_read),
 		// Passthrough
 		.m_rd(m_rd),
 		.m_rs(m_rs),
-<<<<<<< HEAD
-		.m_rt(m_rt)
-=======
 		.m_rt(m_rt),
 		.m_alu_rslt(m_alu_result),
 		.m_reg_write_en(m_reg_write_en),
 		.m_reg_write_src(m_reg_write_src)
->>>>>>> 495850bf2a7e0dd085753c7a92a340aee4c4bc9b
 	);
 	// Writeback
 	// Write to register file, and update PC based on ALU flags
@@ -184,14 +176,10 @@ module cpu(
 		.m_reg_write_en(m_reg_write_en),
 		.m_rd(m_rd),
 		// Outputs
-<<<<<<< HEAD
-		.reg_write_data(w_reg_write_data)
-=======
 		.reg_write_data(w_reg_write_data),
 		// Passthrough
 		.w_reg_write_en(w_reg_write_en),
 		.w_rd(w_rd)
->>>>>>> 495850bf2a7e0dd085753c7a92a340aee4c4bc9b
 	);
 
 	// Shared parts of the computer (not in only one stage)
