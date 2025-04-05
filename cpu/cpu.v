@@ -103,9 +103,33 @@ module cpu(
 		.alu_src1(d_alu_src1),
 		.alu_src2(d_alu_src2),
 		.alu_op(d_alu_op),
+		// Passthrough
+		.d_rd(d_rd),
+		.d_rs(d_rs),
+		.d_rt(d_rt),
+		.d_reg_rt(d_reg_rt),
+		.d_mem_write_en(d_mem_write_en),
+		.d_mem_read_en(d_mem_read_en),
+		.d_reg_write_en(d_reg_write_en),
+		.d_reg_write_src(d_reg_write_src),
+		.d_branch_cond(d_branch_cond),
+		.d_branch(d_branch),
+		.d_pc_plus2(d_pc_plus2),
 		// Outputs
 		.alu_result(e_alu_result),
 		.flags(e_flags) // nzv
+		// Passthrough
+		.e_rd(e_rd),
+		.e_rs(e_rs),
+		.e_rt(e_rt),
+		.e_reg_rt(e_reg_rt),
+		.e_mem_write_en(e_mem_write_en),
+		.e_mem_read_en(e_mem_read_en),
+		.e_reg_write_en(e_reg_write_en),
+		.e_reg_write_src(e_reg_write_src),
+		.e_branch_cond(e_branch_cond),
+		.e_branch(e_branch),
+		.e_pc_plus2(e_pc_plus2),
 	);
 	// Memory
 	// Read and write to memory
