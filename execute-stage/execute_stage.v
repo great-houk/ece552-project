@@ -86,20 +86,6 @@ module execute_stage(
 		.q(e_rd),
 		.wen(1'b1)
 	);
-	dff rs_dff [3:0] (
-		.clk(clk),
-		.rst(~rst_n),
-		.d(d_rs),
-		.q(e_rs),
-		.wen(1'b1)
-	);
-	dff rt_dff [3:0] (
-		.clk(clk),
-		.rst(~rst_n),
-		.d(d_rt),
-		.q(e_rt),
-		.wen(1'b1)
-	);
 	dff reg_rt_dff [15:0] (
 		.clk(clk),
 		.rst(~rst_n),
@@ -147,13 +133,6 @@ module execute_stage(
 		.rst(~rst_n),
 		.d(d_branch),
 		.q(e_branch),
-		.wen(1'b1)
-	);
-	dff pc_plus2_dff [15:0] (
-		.clk(clk),
-		.rst(~rst_n),
-		.d(d_pc_plus2),
-		.q(e_pc_plus2),
 		.wen(1'b1)
 	);
 

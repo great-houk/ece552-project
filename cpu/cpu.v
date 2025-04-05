@@ -34,13 +34,16 @@ module cpu(
 	wire m_reg_write_en, m_reg_write_src;
 	// Writeback outputs
 	wire [15:0] w_reg_write_data;
-
+	wire w_reg_write_en;
+	wire [3:0] w_rd;
+	wire stall;
 	//// Five stages of the pipeline
 	// Fetch
 	fetch_stage fetch_stage(
 		// Inputs
 		.clk(clk),
 		.rst_n(rst_n),
+		.stall(stall),
 		.next_pc(d_next_pc),
 		.branching(d_branch),
 		// Outputs
@@ -54,6 +57,7 @@ module cpu(
 		// Inputs
 		.clk(clk),
 		.rst_n(rst_n),
+		.stall(stall),
 		.instruction(f_instruction),
 		.pc_plus2(f_pc_plus2),
 		.reg_rs(d_reg_rs),
@@ -146,13 +150,26 @@ module cpu(
 		.e_rd(e_rd),
 		.e_rs(e_rs),
 		.e_rt(e_rt),
+<<<<<<< HEAD
 		.alu_rslt(e_alu_result),
+=======
+		.e_alu_rslt(e_alu_result),
+		.e_reg_write_en(e_reg_write_en),
+		.e_reg_write_src(e_reg_write_src),
+>>>>>>> 495850bf2a7e0dd085753c7a92a340aee4c4bc9b
 		// Outputs
 		.mem_read(m_mem_read),
-		.alu_rslt_out(m_alu_result),
+		// Passthrough
 		.m_rd(m_rd),
 		.m_rs(m_rs),
+<<<<<<< HEAD
 		.m_rt(m_rt)
+=======
+		.m_rt(m_rt),
+		.m_alu_rslt(m_alu_result),
+		.m_reg_write_en(m_reg_write_en),
+		.m_reg_write_src(m_reg_write_src)
+>>>>>>> 495850bf2a7e0dd085753c7a92a340aee4c4bc9b
 	);
 	// Writeback
 	// Write to register file, and update PC based on ALU flags
@@ -163,8 +180,18 @@ module cpu(
 		.alu_result(m_alu_result),
 		.mem_read(m_mem_read),
 		.reg_write_src(m_reg_write_src),
+		// Passthrough
+		.m_reg_write_en(m_reg_write_en),
+		.m_rd(m_rd),
 		// Outputs
+<<<<<<< HEAD
 		.reg_write_data(w_reg_write_data)
+=======
+		.reg_write_data(w_reg_write_data),
+		// Passthrough
+		.w_reg_write_en(w_reg_write_en),
+		.w_rd(w_rd)
+>>>>>>> 495850bf2a7e0dd085753c7a92a340aee4c4bc9b
 	);
 
 	// Shared parts of the computer (not in only one stage)
@@ -173,11 +200,11 @@ module cpu(
 		// Inputs
 		.clk(clk),
 		.rst(~rst_n),
-		.DstReg(rd),
-		.SrcReg1(rs),
-		.SrcReg2(rt),
-		.DstData(reg_write_data),
-		.WriteReg(reg_write_en),
+		.DstReg(w_rd),
+		.SrcReg1(d_rs),
+		.SrcReg2(d_rt),
+		.DstData(w_reg_write_data),
+		.WriteReg(w_reg_write_en),
 		// Outputs
 		.SrcData1(d_reg_rs),
 		.SrcData2(d_reg_rt)

@@ -1,5 +1,5 @@
 module decode_stage(
-	input wire clk, rst_n,
+	input wire clk, rst_n, stall,
 	input wire [15:0] instruction,
 	input wire [15:0] pc_plus2,
 	input wire [2:0] flags, // NZV
@@ -38,20 +38,21 @@ module decode_stage(
 		.rst(~rst_n),
 		.d(instruction),
 		.q(instruction_ff),
-		.wen(1'b1)
+		.wen(stall)
 	);
 
 	// Passthrough FFs
-	dff pc_plus2 [15:0] (
+	dff pc_plus2_dff [15:0] (
 		.clk(clk),
 		.rst(~rst_n),
 		.d(f_pc_plus2),
 		.q(d_pc_plus2),
-		.wen(1'b1)
+		.wen(stall)
 	);
 
 	// Decode instruction
 	wire [3:0] opcode;
+	reg [2:0] branch_cond;
 	assign opcode = instruction_ff[15:12];
 
 	always @(*) begin
@@ -218,7 +219,7 @@ module decode_stage(
 	assign greater_than = (flags[2] == flags[1]) && (flags[2] == 1'b0);
 	// Check if branch condition is met
 	always @* begin
-		case(branch_cond_ff)
+		case(branch_cond)
 			3'b000: should_branch = flags[1] == 1'b0;							// Not Equal (Z = 0)
 			3'b001: should_branch = flags[1] == 1'b1;							// Equal (Z = 1)
 			3'b010: should_branch = greater_than;								// Greater Than (Z = N = 0)
