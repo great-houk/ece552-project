@@ -34,10 +34,8 @@ module cpu(
 	wire [15:0] m_mem_read;
 	wire [15:0] m_alu_result;
 	wire [2:0] m_flags; // nzv
-	wire [3:0] m_rd;
+	wire [3:0] m_rd, m_rs, m_rt;
 	wire m_reg_write_en, m_reg_write_src;
-	wire [2:0] m_branch_cond;
-	wire m_branch;
 	wire [15:0] m_pc_plus2;
 	// Writeback outputs
 	wire [15:0] w_next_pc, w_reg_write_data;
@@ -141,8 +139,21 @@ module cpu(
 		.write_data(e_reg_rt),
 		.mem_write_en(e_mem_write_en),
 		.mem_read_en(e_mem_read_en),
+		//Passthrough
+		.instruction(e_pc_plus2),
+		.instruction_ff(m_pc_plus2),
+		.e_rd(e_rd),
+		.e_rs(e_rs),
+		.e_rt(e_rt),
+		.e_flags(e_flags),
+		.alu_rslt(e_alu_result),
 		// Outputs
-		.mem_read(m_mem_read)
+		.mem_read(m_mem_read),
+		.alu_rslt_out(m_alu_result),
+		.m_rd(m_rd),
+		.m_rs(m_rs),
+		.m_rt(m_rt),
+		.m_flags(m_flags)
 	);
 	// Writeback
 	// Write to register file, and update PC based on ALU flags
