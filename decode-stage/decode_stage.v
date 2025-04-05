@@ -28,7 +28,7 @@ module decode_stage(
 	// Halt signal
 	output reg halt,
 	// Passthrough
-	output [15:0] d_pc_plus2,
+	output [15:0] d_pc_plus2
 );
 	// Input FFs
 	wire [15:0] instruction_ff;

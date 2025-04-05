@@ -42,10 +42,10 @@ module cpu(
 		.clk(clk),
 		.rst_n(rst_n),
 		.next_pc(d_next_pc),
-		.branching(w_branching),
+		.branching(d_branch),
 		// Outputs
 		.instruction(f_instruction),
-		.pc_out(f_pc),
+		.pc_out(pc),
 		.pc_plus2(f_pc_plus2)
 	);
 	// Decode
@@ -104,8 +104,6 @@ module cpu(
 		.d_mem_read_en(d_mem_read_en),
 		.d_reg_write_en(d_reg_write_en),
 		.d_reg_write_src(d_reg_write_src),
-		.d_branch_cond(d_branch_cond),
-		.d_branch(d_branch),
 		.d_pc_plus2(d_pc_plus2),
 		// Outputs
 		.alu_result(e_alu_result),
@@ -119,9 +117,6 @@ module cpu(
 		.e_mem_read_en(e_mem_read_en),
 		.e_reg_write_en(e_reg_write_en),
 		.e_reg_write_src(e_reg_write_src),
-		.e_branch_cond(e_branch_cond),
-		.e_branch(e_branch),
-		.e_pc_plus2(e_pc_plus2),
 	);
 	// Memory
 	// Read and write to memory
@@ -134,8 +129,6 @@ module cpu(
 		.mem_write_en(e_mem_write_en),
 		.mem_read_en(e_mem_read_en),
 		//Passthrough
-		.instruction(e_pc_plus2),
-		.instruction_out(m_pc_plus2),
 		.e_rd(e_rd),
 		.e_rs(e_rs),
 		.e_rt(e_rt),
@@ -147,7 +140,6 @@ module cpu(
 		.m_rd(m_rd),
 		.m_rs(m_rs),
 		.m_rt(m_rt),
-		.m_flags(m_flags)
 	);
 	// Writeback
 	// Write to register file, and update PC based on ALU flags
@@ -155,17 +147,11 @@ module cpu(
 		// Inputs
 		.clk(clk),
 		.rst_n(rst_n),
-		.branch(m_branch),
-		.branch_cond(m_branch_cond),
-		.flags(m_flags),
-		.pc_plus2(m_pc_plus2),
 		.alu_result(m_alu_result),
 		.mem_read(m_mem_read),
 		.reg_write_src(m_reg_write_src),
 		// Outputs
-		.next_pc(w_next_pc),
 		.reg_write_data(w_reg_write_data),
-		.branching(w_branching)
 	);
 
 	// Shared parts of the computer (not in only one stage)
