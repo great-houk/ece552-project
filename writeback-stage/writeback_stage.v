@@ -2,8 +2,11 @@ module writeback_stage(
 	input clk, rst_n,
 	input [15:0] alu_result, mem_read,
 	input reg_write_src, // 0: ALU, 1: MEM
-	output [15:0] next_pc, reg_write_data,
-	output branching
+	input m_reg_write_en,
+	input [3:0] m_rd,
+	output [15:0] reg_write_data,
+	output w_reg_write_en,
+	output [3:0] w_rd
 );
 	// Input FFs
 	wire [15:0] alu_result_ff;
@@ -31,7 +34,20 @@ module writeback_stage(
 		.wen(1'b1)
 	);
 	// Passthrough FFs
-
+	dff reg_write_en_dff (
+		.clk(clk),
+		.rst(~rst_n),
+		.d(m_reg_write_en),
+		.q(w_reg_write_en),
+		.wen(1'b1)
+	);
+	dff rd_dff [3:0] (
+		.clk(clk),
+		.rst(~rst_n),
+		.d(m_rd),
+		.q(w_rd),
+		.wen(1'b1)
+	);
 
 	// Assign reg write data
 	assign reg_write_data = reg_write_src_ff ? mem_read_ff : alu_result_ff;
