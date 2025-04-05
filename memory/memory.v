@@ -53,9 +53,9 @@ module memory1c_instr (data_out, data_in, addr, enable, wr, clk, rst);
 
    always @(posedge clk) begin
       if (rst) begin
-         //load loadfile_all.img
+         //load program.img
          if (!loaded) begin
-            $readmemh("loadfile_all.img", mem);
+            $readmemh("program.img", mem);
             loaded = 1;
          end
           
@@ -93,14 +93,20 @@ module memory1c (data_out, data_in, addr, enable, wr, clk, rst);
       loaded = 0;
    end
 
+	integer i;
    always @(posedge clk) begin
       if (rst) begin
          //load loadfile_all.img
-         if (!loaded) begin
-            $readmemh("loadfile_all_data.img", mem);
-            loaded = 1;
-         end
-          
+        //  if (!loaded) begin
+        //     $readmemh("loadfile_all_data.img", mem);
+        //     loaded = 1;
+        //  end
+		
+		// Set the memory to 0 on reset
+		for (i = 0; i < 2**ADDR_WIDTH; i = i + 1) begin
+			mem[i] = 16'h0000;
+		end
+		loaded = 1;  
       end
       else begin
          if (enable & wr) begin

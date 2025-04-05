@@ -15,7 +15,7 @@ module cpu(
 	wire d_alu_src1, d_alu_src2;
 	wire d_mem_write_en, d_mem_read_en;
 	wire d_reg_write_en, d_reg_write_src;
-	wire d_branch;
+	wire d_branching;
 	wire [15:0] d_next_pc;
 	wire [15:0] d_pc_plus2;
 	// Register File outputs
@@ -37,15 +37,15 @@ module cpu(
 	wire w_reg_write_en;
 	wire [3:0] w_rd;
 	wire stall;
+	assign stall = 1'b0; // TODO: Implement hazard detection unit
 	//// Five stages of the pipeline
 	// Fetch
 	fetch_stage fetch_stage(
 		// Inputs
 		.clk(clk),
 		.rst_n(rst_n),
-		.stall(stall),
 		.next_pc(d_next_pc),
-		.branching(d_branch),
+		.branching(d_branching),
 		// Outputs
 		.instruction(f_instruction),
 		.pc_out(pc),
@@ -60,6 +60,7 @@ module cpu(
 		.stall(stall),
 		.instruction(f_instruction),
 		.pc_plus2(f_pc_plus2),
+		.flags(e_flags), // NZV
 		.reg_rs(d_reg_rs),
 		// Outputs
 		// Register file read data
@@ -79,26 +80,13 @@ module cpu(
 		.reg_write_en(d_reg_write_en),
 		.reg_write_src(d_reg_write_src), // 0: ALU, 1: MEM
 		// Branch logic signals
-		.branch(d_branch),
+		.branching(d_branching),
 		.next_pc(d_next_pc),
 		// Halt signal
 		.halt(hlt),
 		// Passthrough
 		.d_pc_plus2(d_pc_plus2)
 	);
-
-	//Detection_unit
-	detection_unit detection_unit(
-		//Inputs
-		.curr_rs(d_rs),
-		.curr_rt(d_rt),
-		.e_rd(e_rd),
-		.m_rd(m_rd),
-		.alu_op(d_alu_op),
-		.hazard_sig(stall)
-	);
-
-
 	// Execute
 	// ALU, flag register, and branch addr calculation
 	execute_stage execute_stage(
@@ -116,7 +104,6 @@ module cpu(
 		.d_rd(d_rd),
 		.d_rs(d_rs),
 		.d_rt(d_rt),
-		.d_reg_rt(d_reg_rt),
 		.d_mem_write_en(d_mem_write_en),
 		.d_mem_read_en(d_mem_read_en),
 		.d_reg_write_en(d_reg_write_en),
@@ -145,7 +132,7 @@ module cpu(
 		.write_data(e_reg_rt),
 		.mem_write_en(e_mem_write_en),
 		.mem_read_en(e_mem_read_en),
-		//Passthrough
+		// Passthrough
 		.e_rd(e_rd),
 		.e_rs(e_rs),
 		.e_rt(e_rt),
@@ -196,6 +183,17 @@ module cpu(
 		.SrcData1(d_reg_rs),
 		.SrcData2(d_reg_rt)
 	);
+
+	// // Hazard Detection_unit
+	// detection_unit detection_unit(
+	// 	//Inputs
+	// 	.curr_rs(d_rs),
+	// 	.curr_rt(d_rt),
+	// 	.e_rd(e_rd),
+	// 	.m_rd(m_rd),
+	// 	.alu_op(d_alu_op),
+	// 	.hazard_sig(stall)
+	// );
 endmodule
 
 `default_nettype wire

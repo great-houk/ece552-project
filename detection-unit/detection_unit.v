@@ -10,7 +10,7 @@ module detection_unit(
 
 
 wire temp;
-assign temp = 
+// assign temp = 
 
 
 

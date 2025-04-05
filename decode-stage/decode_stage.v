@@ -23,13 +23,12 @@ module decode_stage(
 	output reg reg_write_en,
 	output reg reg_write_src, // 0: ALU, 1: MEM
 	// Branch Control signal
-	output reg branch,
+	output branching,
 	output [15:0] next_pc,
 	// Halt signal
 	output reg halt,
 	// Passthrough
-	output [15:0] d_pc_plus2,
-	output branching
+	output [15:0] d_pc_plus2
 );
 	// Input FFs
 	wire [15:0] instruction_ff;
@@ -38,21 +37,22 @@ module decode_stage(
 		.rst(~rst_n),
 		.d(instruction),
 		.q(instruction_ff),
-		.wen(stall)
+		.wen(~stall)
 	);
 
 	// Passthrough FFs
 	dff pc_plus2_dff [15:0] (
 		.clk(clk),
 		.rst(~rst_n),
-		.d(f_pc_plus2),
+		.d(pc_plus2),
 		.q(d_pc_plus2),
-		.wen(stall)
+		.wen(~stall)
 	);
 
 	// Decode instruction
 	wire [3:0] opcode;
 	reg [2:0] branch_cond;
+	reg branch;
 	assign opcode = instruction_ff[15:12];
 
 	always @(*) begin
@@ -235,12 +235,13 @@ module decode_stage(
 	// Calculate next PC
 	wire [15:0] pc_plus_imm;
 	cla_16bit pc_plus_imm_adder (
-		.a(pc_plus2_ff),
+		.a(d_pc_plus2),
 		.b(imm),
 		.cin(1'b0),
-		.sum(pc_plus_imm)
+		.sum(pc_plus_imm),
+		.cout()
 	);
 
 	assign branching = branch & should_branch;
-	assign next_pc = branching ? (opcode[0] ? reg_rs : pc_plus_imm) : pc_plus2_ff;
+	assign next_pc = branching ? (opcode[0] ? reg_rs : pc_plus_imm) : d_pc_plus2;
 endmodule

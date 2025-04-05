@@ -6,11 +6,8 @@ module execute_stage(
 	input [3:0] alu_op,
 	// Passthrough
 	input [3:0] d_rd, d_rs, d_rt,
-	input [15:0] d_reg_rt,
 	input d_mem_write_en, d_mem_read_en,
 	input d_reg_write_en, d_reg_write_src,
-	input [2:0] d_branch_cond,
-	input d_branch,
 	input [15:0] d_pc_plus2,
 	// Outputs
 	output reg [15:0] alu_result,
@@ -19,21 +16,18 @@ module execute_stage(
 	output [3:0] e_rd, e_rs, e_rt,
 	output [15:0] e_reg_rt,
 	output e_mem_write_en, e_mem_read_en,
-	output e_reg_write_en, e_reg_write_src,
-	output [2:0] e_branch_cond,
-	output e_branch,
-	output [15:0] e_pc_plus2
+	output e_reg_write_en, e_reg_write_src
 );
 	// Input dffs
 	wire [15:0] reg_rs_ff, reg_rt_ff, imm_ff, pc_plus2_ff;
-	dff rs_dff [15:0] (
+	dff reg_rs_dff [15:0] (
 		.clk(clk),
 		.rst(~rst_n),
 		.d(reg_rs),
 		.q(reg_rs_ff),
 		.wen(1'b1)
 	);
-	dff rt_dff [15:0] (
+	dff reg_rt_dff [15:0] (
 		.clk(clk),
 		.rst(~rst_n),
 		.d(reg_rt),
@@ -79,6 +73,20 @@ module execute_stage(
 	);
 
 	// Passthrough dffs
+	dff rs_dff [3:0] (
+		.clk(clk),
+		.rst(~rst_n),
+		.d(d_rs),
+		.q(e_rs),
+		.wen(1'b1)
+	);
+	dff rt_dff [3:0] (
+		.clk(clk),
+		.rst(~rst_n),
+		.d(d_rt),
+		.q(e_rt),
+		.wen(1'b1)
+	);
 	dff rd_dff [3:0] (
 		.clk(clk),
 		.rst(~rst_n),
@@ -86,13 +94,7 @@ module execute_stage(
 		.q(e_rd),
 		.wen(1'b1)
 	);
-	dff reg_rt_dff [15:0] (
-		.clk(clk),
-		.rst(~rst_n),
-		.d(d_reg_rt),
-		.q(e_reg_rt),
-		.wen(1'b1)
-	);
+	assign e_reg_rt = reg_rt_ff; // Pass through reg_rt
 	dff mem_write_en_dff (
 		.clk(clk),
 		.rst(~rst_n),
@@ -119,20 +121,6 @@ module execute_stage(
 		.rst(~rst_n),
 		.d(d_reg_write_src),
 		.q(e_reg_write_src),
-		.wen(1'b1)
-	);
-	dff branch_cond_dff [2:0] (
-		.clk(clk),
-		.rst(~rst_n),
-		.d(d_branch_cond),
-		.q(e_branch_cond),
-		.wen(1'b1)
-	);
-	dff branch_dff (
-		.clk(clk),
-		.rst(~rst_n),
-		.d(d_branch),
-		.q(e_branch),
 		.wen(1'b1)
 	);
 
