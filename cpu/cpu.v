@@ -155,11 +155,14 @@ module cpu(
 		.alu_result(m_alu_result),
 		.mem_read(m_mem_read),
 		.reg_write_src(m_reg_write_src),
+		// Passthrough
 		.m_reg_write_en(m_reg_write_en),
+		.m_rd(m_rd),
 		// Outputs
 		.reg_write_data(w_reg_write_data),
+		// Passthrough
 		.w_reg_write_en(w_reg_write_en),
-		.rd(w_rd)
+		.w_rd(w_rd)
 	);
 
 	// Shared parts of the computer (not in only one stage)
