@@ -38,8 +38,8 @@ module Register(
 );
 	wire [15:0] read1, read2;
 	BitCell bitcells [15:0] (clk, rst, D, WriteReg, ReadEnable1, ReadEnable2, read1, read2);
-	assign Bitline1 = (WriteReg & ReadEnable1) ? read1 : read1;
-	assign Bitline2 = (WriteReg & ReadEnable2) ? read2 : read2;
+	assign Bitline1 = (WriteReg & ReadEnable1) ? D : read1;
+	assign Bitline2 = (WriteReg & ReadEnable2) ? D : read2;
 endmodule
 
 module RegisterFile(
