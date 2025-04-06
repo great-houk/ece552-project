@@ -18,6 +18,7 @@ module cpu(
 	wire d_branching;
 	wire [15:0] d_next_pc;
 	wire [15:0] d_pc_plus2;
+	wire d_halt;
 	// Register File outputs
 	wire [15:0] d_reg_rs, d_reg_rt;
 	// Execute outputs
@@ -27,11 +28,13 @@ module cpu(
 	wire [15:0] e_reg_rt;
 	wire e_mem_write_en, e_mem_read_en;
 	wire e_reg_write_en, e_reg_write_src;
+	wire e_halt;
 	// Memory outputs
 	wire [15:0] m_mem_read;
 	wire [15:0] m_alu_result;
 	wire [3:0] m_rd, m_rs, m_rt;
 	wire m_reg_write_en, m_reg_write_src;
+	wire m_halt;
 	// Writeback outputs
 	wire [15:0] w_reg_write_data;
 	wire w_reg_write_en;
@@ -83,7 +86,7 @@ module cpu(
 		.branching(d_branching),
 		.next_pc(d_next_pc),
 		// Halt signal
-		.halt(hlt),
+		.halt(d_halt),
 		// Passthrough
 		.d_pc_plus2(d_pc_plus2)
 	);
@@ -109,6 +112,7 @@ module cpu(
 		.d_reg_write_en(d_reg_write_en),
 		.d_reg_write_src(d_reg_write_src),
 		.d_pc_plus2(d_pc_plus2),
+		.d_halt(d_halt),
 		// Outputs
 		.alu_result(e_alu_result),
 		.flags(e_flags), // nzv
@@ -120,7 +124,8 @@ module cpu(
 		.e_mem_write_en(e_mem_write_en),
 		.e_mem_read_en(e_mem_read_en),
 		.e_reg_write_en(e_reg_write_en),
-		.e_reg_write_src(e_reg_write_src)
+		.e_reg_write_src(e_reg_write_src),
+		.e_halt(e_halt)
 	);
 	// Memory
 	// Read and write to memory
@@ -139,6 +144,7 @@ module cpu(
 		.e_alu_rslt(e_alu_result),
 		.e_reg_write_en(e_reg_write_en),
 		.e_reg_write_src(e_reg_write_src),
+		.e_halt(e_halt),
 		// Outputs
 		.mem_read(m_mem_read),
 		// Passthrough
@@ -147,7 +153,8 @@ module cpu(
 		.m_rt(m_rt),
 		.m_alu_rslt(m_alu_result),
 		.m_reg_write_en(m_reg_write_en),
-		.m_reg_write_src(m_reg_write_src)
+		.m_reg_write_src(m_reg_write_src),
+		.m_halt(m_halt)
 	);
 	// Writeback
 	// Write to register file, and update PC based on ALU flags
@@ -158,14 +165,14 @@ module cpu(
 		.alu_result(m_alu_result),
 		.mem_read(m_mem_read),
 		.reg_write_src(m_reg_write_src),
-		// Passthrough
 		.m_reg_write_en(m_reg_write_en),
 		.m_rd(m_rd),
+		.m_halt(m_halt),
 		// Outputs
 		.reg_write_data(w_reg_write_data),
-		// Passthrough
 		.w_reg_write_en(w_reg_write_en),
-		.w_rd(w_rd)
+		.w_rd(w_rd),
+		.halt(hlt)
 	);
 
 	// Shared parts of the computer (not in only one stage)

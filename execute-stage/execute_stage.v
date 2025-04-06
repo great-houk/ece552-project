@@ -9,6 +9,7 @@ module execute_stage(
 	input d_mem_write_en, d_mem_read_en,
 	input d_reg_write_en, d_reg_write_src,
 	input [15:0] d_pc_plus2,
+	input d_halt,
 	// Outputs
 	output reg [15:0] alu_result,
 	output [2:0] flags, // nzv
@@ -16,7 +17,8 @@ module execute_stage(
 	output [3:0] e_rd, e_rs, e_rt,
 	output [15:0] e_reg_rt,
 	output e_mem_write_en, e_mem_read_en,
-	output e_reg_write_en, e_reg_write_src
+	output e_reg_write_en, e_reg_write_src,
+	output e_halt
 );
 	// Input dffs
 	wire [15:0] reg_rs_ff, reg_rt_ff, imm_ff, pc_plus2_ff;
@@ -121,6 +123,13 @@ module execute_stage(
 		.rst(~rst_n),
 		.d(d_reg_write_src),
 		.q(e_reg_write_src),
+		.wen(1'b1)
+	);
+	dff halt_dff (
+		.clk(clk),
+		.rst(~rst_n),
+		.d(d_halt),
+		.q(e_halt),
 		.wen(1'b1)
 	);
 

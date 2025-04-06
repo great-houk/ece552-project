@@ -235,7 +235,7 @@ module decode_stage(
 	// Calculate next PC
 	wire [15:0] pc_plus_imm;
 	cla_16bit pc_plus_imm_adder (
-		.a(d_pc_plus2),
+		.a(pc_plus2),
 		.b(imm),
 		.cin(1'b0),
 		.sum(pc_plus_imm),
@@ -243,5 +243,5 @@ module decode_stage(
 	);
 
 	assign branching = branch & should_branch;
-	assign next_pc = branching ? (opcode[0] ? reg_rs : pc_plus_imm) : d_pc_plus2;
+	assign next_pc = branching ? (opcode[0] ? reg_rs : pc_plus_imm) : pc_plus2;
 endmodule

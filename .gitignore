@@ -8,3 +8,7 @@ loadfile_all.img
 *.wlf
 /work/
 /.history/
+*.img
+*.asm
+verilogsim.plog
+verilogsim.ptrace

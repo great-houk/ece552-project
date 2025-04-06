@@ -8,12 +8,14 @@ module memory_stage(
 	input [15:0] e_alu_rslt,
 	input [3:0] e_rd, e_rs, e_rt,
 	input e_reg_write_en, e_reg_write_src,
+	input e_halt,
 	// Outputs
 	output [15:0] mem_read,
 	// Passthrough
 	input [15:0] m_alu_rslt,
 	input [3:0] m_rd, m_rs, m_rt,
-	input m_reg_write_en, m_reg_write_src
+	input m_reg_write_en, m_reg_write_src,
+	input m_halt
 );
 	// Input FFs
 	wire [15:0] addr_ff, write_data_ff;
@@ -88,6 +90,13 @@ module memory_stage(
 		.rst(~rst_n),
 		.d(e_reg_write_src),
 		.q(m_reg_write_src),
+		.wen(1'b1)
+	);
+	dff halt_dff (
+		.clk(clk),
+		.rst(~rst_n),
+		.d(e_halt),
+		.q(m_halt),
 		.wen(1'b1)
 	);
 
