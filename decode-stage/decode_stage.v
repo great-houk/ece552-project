@@ -15,7 +15,6 @@ module decode_stage(
 	output reg [3:0] alu_op,  // ALU operation
 	output reg alu_src1,	  // 0: RS, 1: PC+2
 	output reg alu_src2,	  // 0: RT, 1: IMM
-
 	// Memory Control signals
 	output reg mem_write_en,
 	output reg mem_read_en,
@@ -23,8 +22,10 @@ module decode_stage(
 	output reg reg_write_en,
 	output reg reg_write_src, // 0: ALU, 1: MEM
 	// Branch Control signal
-	output branching,
 	output [15:0] next_pc,
+	// Hazard detection signals
+	output [3:0] opcode,
+	output branching,
 	// Halt signal
 	output reg halt,
 	// Passthrough
@@ -34,12 +35,12 @@ module decode_stage(
 	wire [15:0] instruction_ff_raw, instruction_ff;
 	dff instr_dff [15:0] (
 		.clk(clk),
-		.rst(~rst_n | flush),
-		.d(instruction),
+		.rst(~rst_n),
+		.d(flush ? 16'hD0 : instruction),
 		.q(instruction_ff_raw),
 		.wen(~stall)
 	);
-	assign instruction_ff = stall ? 16'h0 : instruction_ff_raw;
+	assign instruction_ff = stall ? 16'hD0 : instruction_ff_raw;
 
 	// Passthrough FFs
 	dff pc_plus2_dff [15:0] (
@@ -51,7 +52,6 @@ module decode_stage(
 	);
 
 	// Decode instruction
-	wire [3:0] opcode;
 	reg [2:0] branch_cond;
 	reg branch;
 	assign opcode = instruction_ff[15:12];
@@ -172,16 +172,13 @@ module decode_stage(
 				reg_write_src = 0;
 			end
 			4'b1100: begin // B
-				alu_op = 4'd10; // Add no flags
-				alu_src1 = 1; // Use PC+2
-				alu_src2 = 1; // Use IMM for calculation
+				alu_op = 4'd13; // no flags
 				imm = {{6{instruction_ff[8]}}, instruction_ff[8:0], 1'b0}; // 9 bit imm << 1
 				branch_cond = instruction_ff[11:9];
 				branch = 1;
 			end
 			4'b1101: begin // BR
-				alu_op = 4'd13; // Pass RS
-				alu_src1 = 0;
+				alu_op = 4'd13; // no flags
 				branch_cond = instruction_ff[11:9];
 				branch = 1;
 			end
@@ -236,7 +233,7 @@ module decode_stage(
 	// Calculate next PC
 	wire [15:0] pc_plus_imm;
 	cla_16bit pc_plus_imm_adder (
-		.a(pc_plus2),
+		.a(d_pc_plus2),
 		.b(imm),
 		.cin(1'b0),
 		.sum(pc_plus_imm),

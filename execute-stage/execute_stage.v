@@ -4,6 +4,8 @@ module execute_stage(
 	input [15:0] reg_rs, reg_rt, imm, pc_plus2,
 	input alu_src1, alu_src2,
 	input [3:0] alu_op,
+	input [15:0] m_alu_result, w_reg_write_data,
+	input [1:0] ex_ex_forwarding, ex_mem_forwarding,
 	// Passthrough
 	input [3:0] d_rd, d_rs, d_rt,
 	input d_mem_write_en, d_mem_read_en,
@@ -136,8 +138,16 @@ module execute_stage(
 
 	// Assign sources
 	wire [15:0] alu_src1_data, alu_src2_data;
-	assign alu_src1_data = alu_src1_ff ? pc_plus2_ff : reg_rs_ff;
-	assign alu_src2_data = alu_src2_ff ? imm_ff : reg_rt_ff;
+	assign alu_src1_data = 
+		alu_src1_ff ? pc_plus2_ff :
+		ex_ex_forwarding[0] ? m_alu_result :
+		ex_mem_forwarding[0] ? w_reg_write_data :
+		reg_rs_ff;
+	assign alu_src2_data = 
+		alu_src2_ff ? imm_ff :
+		ex_ex_forwarding[1] ? m_alu_result :
+		ex_mem_forwarding[1] ? w_reg_write_data :
+		reg_rt_ff;
 
 	// Calculate possible ALU results
 	// Add/sub

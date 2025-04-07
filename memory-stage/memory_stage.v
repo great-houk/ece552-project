@@ -4,6 +4,8 @@ module memory_stage(
 	input [15:0] addr, 
 	input [15:0] write_data, 
 	input mem_write_en, mem_read_en,
+	input [15:0] w_reg_write_data,
+	input mem_mem_forwarding,
 	// Passthrough
 	input [15:0] e_alu_rslt,
 	input [3:0] e_rd, e_rs, e_rt,
@@ -100,6 +102,10 @@ module memory_stage(
 		.wen(1'b1)
 	);
 
+	// Mem-mem forwarding
+	wire [15:0] mem_forward;
+	assign mem_forward = mem_mem_forwarding ? w_reg_write_data : write_data_ff;
+
 	// Instantiate memory read
 	memory1c memory_read(
 		.clk(clk),
@@ -107,7 +113,7 @@ module memory_stage(
 		.enable(mem_read_en_ff),
 		.addr(addr_ff),
 		.wr(mem_write_en_ff),
-		.data_in(write_data_ff),
+		.data_in(mem_forward),
 		.data_out(mem_read)
 	);
 endmodule

@@ -15,8 +15,9 @@ module cpu(
 	wire d_alu_src1, d_alu_src2;
 	wire d_mem_write_en, d_mem_read_en;
 	wire d_reg_write_en, d_reg_write_src;
-	wire d_branching;
 	wire [15:0] d_next_pc;
+	wire [3:0] d_opcode;
+	wire d_branching;
 	wire [15:0] d_pc_plus2;
 	wire d_halt;
 	// Register File outputs
@@ -45,9 +46,6 @@ module cpu(
 	wire flush;
 	wire [1:0] ex_ex_forwarding, ex_mem_forwarding; // 0: none, 1: rs, 2: rt, 3: both
 	wire mem_mem_forwarding;
-	// Forwarding Unit outputs
-	wire [15:0] ex_forward_rs, ex_forward_rt;
-	wire [15:0] mem_forward_rt;
 	//// Five stages of the pipeline
 	// Fetch
 	fetch_stage fetch_stage(
@@ -90,9 +88,11 @@ module cpu(
 		// Register File Control signals
 		.reg_write_en(d_reg_write_en),
 		.reg_write_src(d_reg_write_src), // 0: ALU, 1: MEM
-		// Branch logic signals
-		.branching(d_branching),
+		// PC Control signals
 		.next_pc(d_next_pc),
+		// Hazard detection signals
+		.branching(d_branching),
+		.opcode(d_opcode),
 		// Halt signal
 		.halt(d_halt),
 		// Passthrough
@@ -104,13 +104,17 @@ module cpu(
 		// Inputs
 		.clk(clk),
 		.rst_n(rst_n),
-		.reg_rs(ex_forward_rs),
-		.reg_rt(ex_forward_rt),
+		.reg_rs(d_reg_rs),
+		.reg_rt(d_reg_rt),
 		.imm(d_imm),
 		.pc_plus2(d_pc_plus2),
 		.alu_src1(d_alu_src1),
 		.alu_src2(d_alu_src2),
 		.alu_op(d_alu_op),
+		.m_alu_result(m_alu_result),
+		.w_reg_write_data(w_reg_write_data),
+		.ex_ex_forwarding(ex_ex_forwarding),
+		.ex_mem_forwarding(ex_mem_forwarding),
 		// Passthrough
 		.d_rd(d_rd),
 		.d_rs(d_rs),
@@ -143,9 +147,11 @@ module cpu(
 		.clk(clk),
 		.rst_n(rst_n),
 		.addr(e_alu_result),
-		.write_data(mem_forward_rt),
+		.write_data(e_reg_rt),
 		.mem_write_en(e_mem_write_en),
 		.mem_read_en(e_mem_read_en),
+		.w_reg_write_data(w_reg_write_data),
+		.mem_mem_forwarding(mem_mem_forwarding),
 		// Passthrough
 		.e_rd(e_rd),
 		.e_rs(e_rs),
@@ -204,18 +210,17 @@ module cpu(
 		// Inputs
 		.clk(clk),
 		.rst_n(rst_n),
-		.flag_update(e_flag_update),
-		.m_reg_write_en(m_reg_write_en),
-		.w_reg_write_en(w_reg_write_en),
-		.reg_write_src(e_reg_write_src),
 		.e_reg_write_en(e_reg_write_en),
-		.branching(d_branching),
-		.mem_read_en(e_mem_read_en),
-		.e_flags(e_flags),
-		.e_ccc(d_pc_plus2[11:9]),
+		.e_reg_write_src(e_reg_write_src),
+		.e_flag_update(e_flag_update),
+		.m_reg_write_en(m_reg_write_en),
+		.m_reg_write_src(m_reg_write_src),
+		.w_reg_write_en(w_reg_write_en),
+		.d_opcode(d_opcode),
+		.d_branching(d_branching),
 		.d_rs(d_rs), .d_rt(d_rt),
 		.e_rd(e_rd), .e_rs(e_rs), .e_rt(e_rt),
-		.m_rd(m_rd), .m_rs(m_rs), .m_rt(m_rt),
+		.m_rd(m_rd), .m_rt(m_rt),
 		.w_rd(w_rd),
 		// Outputs
 		.stall(stall),
@@ -223,24 +228,6 @@ module cpu(
 		.ex_ex_forwarding(ex_ex_forwarding),
 		.ex_mem_forwarding(ex_mem_forwarding),
 		.mem_mem_forwarding(mem_mem_forwarding)
-	);
-	// Forwarding Unit
-	forwarding_unit forwarding_unit(
-		// Inputs
-		.clk(clk),
-		.rst_n(rst_n),
-		.ex_ex_forwarding(ex_ex_forwarding),
-		.d_flags(),
-		.ex_mem_forwarding(ex_mem_forwarding),
-		.mem_mem_forwarding(mem_mem_forwarding),
-		.m_alu_result(m_alu_result),
-		.w_reg_write_data(w_reg_write_data),
-		.d_reg_rs(d_reg_rs), .d_reg_rt(d_reg_rt),
-		.e_reg_rt(e_reg_rt),
-		// Outputs
-		.ex_forward_rs(ex_forward_rs),
-		.ex_forward_rt(ex_forward_rt),
-		.mem_forward_rt(mem_forward_rt)
 	);
 endmodule
 
