@@ -26,6 +26,7 @@ module cpu(
 	wire [2:0] e_flags; // nzv
 	wire [3:0] e_rd, e_rs, e_rt;
 	wire [15:0] e_reg_rt;
+	wire [3:0] e_alu_op
 	wire e_mem_write_en, e_mem_read_en;
 	wire e_reg_write_en, e_reg_write_src;
 	wire e_halt;
@@ -125,7 +126,8 @@ module cpu(
 		.e_mem_read_en(e_mem_read_en),
 		.e_reg_write_en(e_reg_write_en),
 		.e_reg_write_src(e_reg_write_src),
-		.e_halt(e_halt)
+		.e_halt(e_halt),
+		.e_alu_op(e_alu_op)
 	);
 	// Memory
 	// Read and write to memory
@@ -191,16 +193,16 @@ module cpu(
 		.SrcData2(d_reg_rt)
 	);
 
-	// // Hazard Detection_unit
-	// detection_unit detection_unit(
-	// 	//Inputs
-	// 	.curr_rs(d_rs),
-	// 	.curr_rt(d_rt),
-	// 	.e_rd(e_rd),
-	// 	.m_rd(m_rd),
-	// 	.alu_op(d_alu_op),
-	// 	.hazard_sig(stall)
-	// );
+	// Hazard Detection_unit
+	 detection_unit detection_unit(
+	 	//Inputs
+	 	.clk(clk),
+	 	.rst_n(rst_n),
+		.e_ccc[11:9](d_pc_plus2),	//Condition codes from prev instr
+	 	.alu_op(e_alu_op),	//opcode from previous instr
+		.e_flags(e_flags),	//flags from previous instr
+	 	.hazard_sig(stall)
+	 );
 endmodule
 
 `default_nettype wire
