@@ -40,8 +40,10 @@ module cpu(
 	wire [15:0] w_reg_write_data;
 	wire w_reg_write_en;
 	wire [3:0] w_rd;
+	// Hazard Detection Unit outputs
 	wire stall;
-	assign stall = 1'b0; // TODO: Implement hazard detection unit
+	wire flush;
+	wire [1:0] ex_ex_forwarding, ex_mem_forwarding, mem_mem_forwarding; // 0: none, 1: rs, 2: rt, 3: both
 	//// Five stages of the pipeline
 	// Fetch
 	fetch_stage fetch_stage(
