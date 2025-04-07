@@ -81,9 +81,32 @@ module cpu_ptb();
 	always @ (posedge clk) begin
 		if (rst_n) begin
 			if (Halt || RegWrite || MemWrite) begin
+				$display(trace_file, "\n------------------");
+				$display(trace_file, "INST %0d @ Cycle %0d", inst_count, cycle_count);
+				$display(trace_file, "PC:  0x%04x  INST: 0x%04x", PC, Inst);
+
+				// Register write
+				if (RegWrite) begin
+					$display(trace_file, "REGWRITE: R%d <= 0x%04x", WriteRegister, WriteData);
+				end
+
+				// Memory activity
+				if (MemRead) begin
+					$display(trace_file, "LOAD:  Mem[0x%04x] => 0x%04x", MemAddress, MemDataOut);
+				end
+				if (MemWrite) begin
+					$display(trace_file, "STORE: Mem[0x%04x] <= 0x%04x", MemAddress, MemDataIn);
+				end
+
+				// Forwarding signals
+				$display(trace_file, "FWD: ex_ex: %b, ex_mem: %b, mem_mem: %b",
+					ex_ex_forwarding, ex_mem_forwarding, mem_mem_forwarding);
+
+				// Stall & Flush
+				$display(trace_file, "STALL: %b  FLUSH: %b", Stall, Flush);
 				inst_count = inst_count + 1;
 			end
-			$fdisplay(sim_log_file, "SIMLOG:: Cycle %d PC: %8x I: %8x R: %d %3d %8x M: %d %d %8x %8x %8x",
+			$display(sim_log_file, "SIMLOG:: Cycle %d PC: %8x I: %8x R: %d %3d %8x M: %d %d %8x %8x %8x",
 						cycle_count,
 						PC,
 						Inst,
@@ -96,23 +119,23 @@ module cpu_ptb();
 						MemDataIn,
 		  MemDataOut);
 			if (RegWrite) begin
-				$fdisplay(trace_file,"REG: %d VALUE: 0x%04x",
+				$display(trace_file,"REG: %d VALUE: 0x%04x",
 							 WriteRegister,
 							 WriteData );				
 			end
 			if (MemRead) begin
-				$fdisplay(trace_file,"LOAD: ADDR: 0x%04x VALUE: 0x%04x",
+				$display(trace_file,"LOAD: ADDR: 0x%04x VALUE: 0x%04x",
 							 MemAddress, MemDataOut );
 			end
 
 			if (MemWrite) begin
-				$fdisplay(trace_file,"STORE: ADDR: 0x%04x VALUE: 0x%04x",
+				$display(trace_file,"STORE: ADDR: 0x%04x VALUE: 0x%04x",
 							 MemAddress, MemDataIn  );
 			end
 			if (Halt) begin
-				$fdisplay(sim_log_file, "SIMLOG:: Processor halted\n");
-				$fdisplay(sim_log_file, "SIMLOG:: sim_cycles %d\n", cycle_count);
-				$fdisplay(sim_log_file, "SIMLOG:: inst_count %d\n", inst_count);
+				$display(sim_log_file, "SIMLOG:: Processor halted\n");
+				$display(sim_log_file, "SIMLOG:: sim_cycles %d\n", cycle_count);
+				$display(sim_log_file, "SIMLOG:: inst_count %d\n", inst_count);
 
 				$fclose(trace_file);
 				$fclose(sim_log_file);
