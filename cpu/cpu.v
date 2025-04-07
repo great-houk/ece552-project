@@ -26,7 +26,7 @@ module cpu(
 	wire [2:0] e_flags; // nzv
 	wire [3:0] e_rd, e_rs, e_rt;
 	wire [15:0] e_reg_rt;
-	wire [3:0] e_alu_op;
+	wire [3:0] e_flag_update;
 	wire e_mem_write_en, e_mem_read_en;
 	wire e_reg_write_en, e_reg_write_src;
 	wire e_halt;
@@ -62,6 +62,7 @@ module cpu(
 		.clk(clk),
 		.rst_n(rst_n),
 		.stall(stall),
+		.flush(flush),
 		.instruction(f_instruction),
 		.pc_plus2(f_pc_plus2),
 		.flags(e_flags), // NZV
@@ -117,6 +118,7 @@ module cpu(
 		// Outputs
 		.alu_result(e_alu_result),
 		.flags(e_flags), // nzv
+		.flag_update(e_flag_update),
 		// Passthrough
 		.e_rd(e_rd),
 		.e_rs(e_rs),
@@ -126,8 +128,7 @@ module cpu(
 		.e_mem_read_en(e_mem_read_en),
 		.e_reg_write_en(e_reg_write_en),
 		.e_reg_write_src(e_reg_write_src),
-		.e_halt(e_halt),
-		.e_alu_op(e_alu_op)
+		.e_halt(e_halt)
 	);
 	// Memory
 	// Read and write to memory
@@ -192,17 +193,25 @@ module cpu(
 		.SrcData1(d_reg_rs),
 		.SrcData2(d_reg_rt)
 	);
-
 	// Hazard Detection_unit
-	 detection_unit detection_unit(
-	 	//Inputs
-	 	.clk(clk),
-	 	.rst_n(rst_n),
-		.e_ccc(d_pc_plus2[11:9]),	//Condition codes from prev instr --middle 3 bits
-	 	.alu_op(e_alu_op),	//opcode from previous instr
-		.e_flags(e_flags),	//flags from previous instr
-	 	.hazard_sig(stall)
-	 );
+	detection_unit detection_unit(
+		// Inputs
+		.clk(clk),
+		.rst_n(rst_n),
+		.flag_update(e_flag_update),
+		.branching(d_branching),
+		.mem_read_en(e_mem_read_en),
+		.d_rs(d_rs), .d_rt(d_rt),
+		.e_rd(e_rd), .e_rs(e_rs), .e_rt(e_rt),
+		.m_rd(m_rd), .m_rs(m_rs), .m_rt(m_rt),
+		.w_rd(w_rd),
+		// Outputs
+		.stall(stall),
+		.flush(flush),
+		.ex_ex_forwarding(ex_ex_forwarding),
+		.ex_mem_forwarding(ex_mem_forwarding),
+		.mem_mem_forwarding(mem_mem_forwarding)
+	);
 endmodule
 
 `default_nettype wire
