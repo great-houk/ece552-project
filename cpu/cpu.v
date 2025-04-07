@@ -16,7 +16,8 @@ module cpu(
 	wire d_mem_write_en, d_mem_read_en;
 	wire d_reg_write_en, d_reg_write_src;
 	wire [15:0] d_next_pc;
-	wire [3:0] d_opcode;
+	wire [3:0] d_opcode_raw;
+	wire [3:0] d_rs_raw, d_rt_raw;
 	wire d_branching;
 	wire [15:0] d_pc_plus2;
 	wire d_halt;
@@ -52,6 +53,7 @@ module cpu(
 		// Inputs
 		.clk(clk),
 		.rst_n(rst_n),
+		.stall(stall),
 		.next_pc(d_next_pc),
 		.branching(d_branching),
 		// Outputs
@@ -92,7 +94,8 @@ module cpu(
 		.next_pc(d_next_pc),
 		// Hazard detection signals
 		.branching(d_branching),
-		.opcode(d_opcode),
+		.opcode_raw(d_opcode_raw),
+		.rs_raw(d_rs_raw), .rt_raw(d_rt_raw),
 		// Halt signal
 		.halt(d_halt),
 		// Passthrough
@@ -216,9 +219,9 @@ module cpu(
 		.m_reg_write_en(m_reg_write_en),
 		.m_reg_write_src(m_reg_write_src),
 		.w_reg_write_en(w_reg_write_en),
-		.d_opcode(d_opcode),
+		.d_opcode(d_opcode_raw),
 		.d_branching(d_branching),
-		.d_rs(d_rs), .d_rt(d_rt),
+		.d_rs(d_rs_raw), .d_rt(d_rt_raw),
 		.e_rd(e_rd), .e_rs(e_rs), .e_rt(e_rt),
 		.m_rd(m_rd), .m_rt(m_rt),
 		.w_rd(w_rd),

@@ -10,7 +10,6 @@ module decode_stage(
 	output reg [3:0] rs,  // Bits 7-4
 	output reg [3:0] rt,  // Bits 3-0 (except SW, when it's 11-8)
 	output reg [15:0] imm, // Immediate value
-
 	// ALU Control signals
 	output reg [3:0] alu_op,  // ALU operation
 	output reg alu_src1,	  // 0: RS, 1: PC+2
@@ -24,7 +23,8 @@ module decode_stage(
 	// Branch Control signal
 	output [15:0] next_pc,
 	// Hazard detection signals
-	output [3:0] opcode,
+	output [3:0] opcode_raw,
+	output [3:0] rs_raw, rt_raw,
 	output branching,
 	// Halt signal
 	output reg halt,
@@ -36,11 +36,11 @@ module decode_stage(
 	dff instr_dff [15:0] (
 		.clk(clk),
 		.rst(~rst_n),
-		.d(flush ? 16'hD0 : instruction),
+		.d(flush ? 16'hE000 : instruction),
 		.q(instruction_ff_raw),
 		.wen(~stall)
 	);
-	assign instruction_ff = stall ? 16'hD0 : instruction_ff_raw;
+	assign instruction_ff = stall ? 16'hE000 : instruction_ff_raw;
 
 	// Passthrough FFs
 	dff pc_plus2_dff [15:0] (
@@ -54,7 +54,11 @@ module decode_stage(
 	// Decode instruction
 	reg [2:0] branch_cond;
 	reg branch;
+	wire [3:0] opcode;
 	assign opcode = instruction_ff[15:12];
+	assign opcode_raw = instruction_ff_raw[15:12];
+	assign rs_raw = instruction_ff_raw[7:4];
+	assign rt_raw = instruction_ff_raw[3:0];
 
 	always @(*) begin
 		// Default values
