@@ -1,4 +1,4 @@
-module detection_unit(
+ module detection_unit(
 	// Inputs
 	input clk,
 	input rst_n,

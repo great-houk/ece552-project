@@ -30,6 +30,14 @@ module cpu_ptb();
 	reg clk; /* Clock input */
 	reg rst_n; /* (Active low) Reset input */
 
+
+//Tom's tracked Vars
+	wire Stall; /* Stall signal from detection unit */
+	wire Flush; /* Flush signal from detection unit */
+	wire [1:0] ex_ex_forwarding, ex_mem_forwarding;
+	wire mem_mem_forwarding;
+
+
 	/* Instantiate your processor */
 	cpu DUT(.clk(clk), .rst_n(rst_n), .pc(PC), .hlt(Halt));
 
@@ -139,7 +147,7 @@ module cpu_ptb();
 	assign WriteData = DUT.w_reg_write_data;
 	// If above is true, this should hold the Data being written to the register. (16 bits)
 	
-	assign MemRead =  (DUT.e_mem_read_en & ~DUT.e_mem_write_en);
+	assign MemRead = DUT.e_mem_read_en;// (DUT.e_mem_read_en & ~DUT.e_mem_write_en);
 	// Is memory being read from, in this cycle. one bit signal (1 means yes, 0 means no)
 	
 	assign MemWrite = (DUT.e_mem_write_en);
@@ -154,6 +162,12 @@ module cpu_ptb();
 	assign MemDataOut = DUT.m_mem_read;
 	// If there's a memory read in this cycle, this is the data being read out of memory (16 bits)
 
+	//Tom's tracked Vars
+	assign Stall = DUT.stall;
+	assign Flush = DUT.flush;
+	assign ex_ex_forwarding = DUT.ex_ex_forwarding;
+	assign ex_mem_forwarding = DUT.ex_mem_forwarding;
+	assign mem_mem_forwarding = DUT.mem_mem_forwarding;
 
 
 	/* Add anything else you want here */
