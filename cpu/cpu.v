@@ -26,7 +26,7 @@ module cpu(
 	wire [2:0] e_flags; // nzv
 	wire [3:0] e_rd, e_rs, e_rt;
 	wire [15:0] e_reg_rt;
-	wire [3:0] e_alu_op
+	wire [3:0] e_alu_op;
 	wire e_mem_write_en, e_mem_read_en;
 	wire e_reg_write_en, e_reg_write_src;
 	wire e_halt;
@@ -198,7 +198,7 @@ module cpu(
 	 	//Inputs
 	 	.clk(clk),
 	 	.rst_n(rst_n),
-		.e_ccc[11:9](d_pc_plus2),	//Condition codes from prev instr
+		.e_ccc(d_pc_plus2[11:9]),	//Condition codes from prev instr --middle 3 bits
 	 	.alu_op(e_alu_op),	//opcode from previous instr
 		.e_flags(e_flags),	//flags from previous instr
 	 	.hazard_sig(stall)

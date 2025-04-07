@@ -2,14 +2,14 @@ module detection_unit(
     input wire clk, rst_n,
     input wire [3:0] alu_op,
     input wire branching,
-    input wire [3:0] e_flags,
-    input wire [3:0] e_ccc,
+    input wire [2:0] e_flags,
+    input wire [2:0] e_ccc,
     output reg stall_sig
 );
-wire is_branch;
+reg is_branch;
 always @(*) begin
 
-    case (opcode) 
+    case (alu_op) 
         4'b1100: is_branch = 1'b1;
         4'b1101: is_branch = 1'b1;  //Was a branching instr 
         default: is_branch = 1'b0; //Stays 0
