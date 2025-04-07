@@ -26,7 +26,7 @@ module cpu(
 	wire [2:0] e_flags; // nzv
 	wire [3:0] e_rd, e_rs, e_rt;
 	wire [15:0] e_reg_rt;
-	wire [3:0] e_flag_update;
+	wire e_flag_update;
 	wire e_mem_write_en, e_mem_read_en;
 	wire e_reg_write_en, e_reg_write_src;
 	wire e_halt;
@@ -43,7 +43,11 @@ module cpu(
 	// Hazard Detection Unit outputs
 	wire stall;
 	wire flush;
-	wire [1:0] ex_ex_forwarding, ex_mem_forwarding, mem_mem_forwarding; // 0: none, 1: rs, 2: rt, 3: both
+	wire [1:0] ex_ex_forwarding, ex_mem_forwarding; // 0: none, 1: rs, 2: rt, 3: both
+	wire mem_mem_forwarding;
+	// Forwarding Unit outputs
+	wire [15:0] ex_forward_rs, ex_forward_rt;
+	wire [15:0] mem_forward_rt;
 	//// Five stages of the pipeline
 	// Fetch
 	fetch_stage fetch_stage(
@@ -100,8 +104,8 @@ module cpu(
 		// Inputs
 		.clk(clk),
 		.rst_n(rst_n),
-		.reg_rs(d_reg_rs),
-		.reg_rt(d_reg_rt),
+		.reg_rs(ex_forward_rs),
+		.reg_rt(ex_forward_rt),
 		.imm(d_imm),
 		.pc_plus2(d_pc_plus2),
 		.alu_src1(d_alu_src1),
@@ -139,7 +143,7 @@ module cpu(
 		.clk(clk),
 		.rst_n(rst_n),
 		.addr(e_alu_result),
-		.write_data(e_reg_rt),
+		.write_data(mem_forward_rt),
 		.mem_write_en(e_mem_write_en),
 		.mem_read_en(e_mem_read_en),
 		// Passthrough
@@ -213,6 +217,23 @@ module cpu(
 		.ex_ex_forwarding(ex_ex_forwarding),
 		.ex_mem_forwarding(ex_mem_forwarding),
 		.mem_mem_forwarding(mem_mem_forwarding)
+	);
+	// Forwarding Unit
+	forwarding_unit forwarding_unit(
+		// Inputs
+		.clk(clk),
+		.rst_n(rst_n),
+		.ex_ex_forwarding(ex_ex_forwarding),
+		.ex_mem_forwarding(ex_mem_forwarding),
+		.mem_mem_forwarding(mem_mem_forwarding),
+		.m_alu_result(m_alu_result),
+		.w_reg_write_data(w_reg_write_data),
+		.d_reg_rs(d_reg_rs), .d_reg_rt(d_reg_rt),
+		.e_reg_rt(e_reg_rt),
+		// Outputs
+		.ex_forward_rs(ex_forward_rs),
+		.ex_forward_rt(ex_forward_rt),
+		.mem_forward_rt(mem_forward_rt)
 	);
 endmodule
 

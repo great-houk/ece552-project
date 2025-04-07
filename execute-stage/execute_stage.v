@@ -13,13 +13,13 @@ module execute_stage(
 	// Outputs
 	output reg [15:0] alu_result,
 	output [2:0] flags, // nzv
+	output flag_update,
 	// Passthrough
 	output [3:0] e_rd, e_rs, e_rt,
 	output [15:0] e_reg_rt,
 	output e_mem_write_en, e_mem_read_en,
 	output e_reg_write_en, e_reg_write_src,
-	output e_halt,
-	output [3:0] e_alu_op
+	output e_halt
 );
 	// Input dffs
 	wire [15:0] reg_rs_ff, reg_rt_ff, imm_ff, pc_plus2_ff;
@@ -203,7 +203,7 @@ module execute_stage(
 	wire [2:0] potential_flags, new_flags;
 	assign potential_flags = {alu_result[15], alu_result == 16'h0, should_sat};
 	assign new_flags = alu_op_ff[3] ? flags : (alu_op_ff[2:1] == 2'h0 ? potential_flags : {flags[2], potential_flags[1], flags[0]});
-	assign e_alu_op = d_alu_op;
+	assign flag_update = ~alu_op_ff[3];
 
 	dff flags_dff [2:0] (
 		.clk(clk),
