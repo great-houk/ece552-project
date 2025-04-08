@@ -32,10 +32,10 @@ module cpu_ptb();
 
 
 //Tom's tracked Vars
-	wire Stall; /* Stall signal from detection unit */
-	wire Flush; /* Flush signal from detection unit */
-	wire [1:0] ex_ex_forwarding, ex_mem_forwarding;
-	wire mem_mem_forwarding;
+	// wire Stall; /* Stall signal from detection unit */
+	// wire Flush; /* Flush signal from detection unit */
+	// wire [1:0] ex_ex_forwarding, ex_mem_forwarding;
+	// wire mem_mem_forwarding;
 
 
 	/* Instantiate your processor */
@@ -79,72 +79,49 @@ module cpu_ptb();
 
   /* Stats */
 	always @ (posedge clk) begin
-		if (rst_n) begin
-			if (Halt || RegWrite || MemWrite) begin
-				$display(trace_file, "\n------------------");
-				$display(trace_file, "INST %0d @ Cycle %0d", inst_count, cycle_count);
-				$display(trace_file, "PC:  0x%04x  INST: 0x%04x", PC, Inst);
-
-				// Register write
-				if (RegWrite) begin
-					$display(trace_file, "REGWRITE: R%d <= 0x%04x", WriteRegister, WriteData);
-				end
-
-				// Memory activity
-				if (MemRead) begin
-					$display(trace_file, "LOAD:  Mem[0x%04x] => 0x%04x", MemAddress, MemDataOut);
-				end
-				if (MemWrite) begin
-					$display(trace_file, "STORE: Mem[0x%04x] <= 0x%04x", MemAddress, MemDataIn);
-				end
-
-				// Forwarding signals
-				$display(trace_file, "FWD: ex_ex: %b, ex_mem: %b, mem_mem: %b",
-					ex_ex_forwarding, ex_mem_forwarding, mem_mem_forwarding);
-
-				// Stall & Flush
-				$display(trace_file, "STALL: %b  FLUSH: %b", Stall, Flush);
-				inst_count = inst_count + 1;
-			end
-			$display(sim_log_file, "SIMLOG:: Cycle %d PC: %8x I: %8x R: %d %3d %8x M: %d %d %8x %8x %8x",
-						cycle_count,
-						PC,
-						Inst,
-						RegWrite,
-						WriteRegister,
-						WriteData,
-						MemRead,
-						MemWrite,
-						MemAddress,
-						MemDataIn,
+      if (rst_n) begin
+         if (Halt || RegWrite || MemWrite) begin
+            inst_count = inst_count + 1;
+         end
+         $fdisplay(sim_log_file, "SIMLOG:: Cycle %d PC: %8x I: %8x R: %d %3d %8x M: %d %d %8x %8x %8x",
+                  cycle_count,
+                  PC,
+                  Inst,
+                  RegWrite,
+                  WriteRegister,
+                  WriteData,
+                  MemRead,
+                  MemWrite,
+                  MemAddress,
+                  MemDataIn,
 		  MemDataOut);
-			if (RegWrite) begin
-				$display(trace_file,"REG: %d VALUE: 0x%04x",
-							 WriteRegister,
-							 WriteData );				
-			end
-			if (MemRead) begin
-				$display(trace_file,"LOAD: ADDR: 0x%04x VALUE: 0x%04x",
-							 MemAddress, MemDataOut );
-			end
+         if (RegWrite) begin
+            $fdisplay(trace_file,"REG: %d VALUE: 0x%04x",
+                      WriteRegister,
+                      WriteData );            
+         end
+         if (MemRead) begin
+            $fdisplay(trace_file,"LOAD: ADDR: 0x%04x VALUE: 0x%04x",
+                      MemAddress, MemDataOut );
+         end
 
-			if (MemWrite) begin
-				$display(trace_file,"STORE: ADDR: 0x%04x VALUE: 0x%04x",
-							 MemAddress, MemDataIn  );
-			end
-			if (Halt) begin
-				$display(sim_log_file, "SIMLOG:: Processor halted\n");
-				$display(sim_log_file, "SIMLOG:: sim_cycles %d\n", cycle_count);
-				$display(sim_log_file, "SIMLOG:: inst_count %d\n", inst_count);
+         if (MemWrite) begin
+            $fdisplay(trace_file,"STORE: ADDR: 0x%04x VALUE: 0x%04x",
+                      MemAddress, MemDataIn  );
+         end
+         if (Halt) begin
+            $fdisplay(sim_log_file, "SIMLOG:: Processor halted\n");
+            $fdisplay(sim_log_file, "SIMLOG:: sim_cycles %d\n", cycle_count);
+            $fdisplay(sim_log_file, "SIMLOG:: inst_count %d\n", inst_count);
 
-				$fclose(trace_file);
-				$fclose(sim_log_file);
-		 #5;
-				$stop;
-			end 
-		end
-		
-	end
+            $fclose(trace_file);
+            $fclose(sim_log_file);
+	    #5;
+            $finish;
+         end 
+      end
+      
+   end
 	/* Assign internal signals to top level wires
 		The internal module names and signal names will vary depending
 		on your naming convention and your design */
@@ -167,7 +144,7 @@ module cpu_ptb();
 	assign WriteRegister = DUT.w_rd;
 	// If above is true, this should hold the name of the register being written to. (4 bit signal)
 	
-	assign WriteData = DUT.w_reg_write_data;
+	assign WriteData = DUT.w_reg_write_data; //Change this to cpu.memorystage.memforward
 	// If above is true, this should hold the Data being written to the register. (16 bits)
 	
 	assign MemRead = DUT.e_mem_read_en;// (DUT.e_mem_read_en & ~DUT.e_mem_write_en);
@@ -186,11 +163,11 @@ module cpu_ptb();
 	// If there's a memory read in this cycle, this is the data being read out of memory (16 bits)
 
 	//Tom's tracked Vars
-	assign Stall = DUT.stall;
-	assign Flush = DUT.flush;
-	assign ex_ex_forwarding = DUT.ex_ex_forwarding;
-	assign ex_mem_forwarding = DUT.ex_mem_forwarding;
-	assign mem_mem_forwarding = DUT.mem_mem_forwarding;
+	// assign Stall = DUT.stall;
+	// assign Flush = DUT.flush;
+	// assign ex_ex_forwarding = DUT.ex_ex_forwarding;
+	// assign ex_mem_forwarding = DUT.ex_mem_forwarding;
+	// assign mem_mem_forwarding = DUT.mem_mem_forwarding;
 
 
 	/* Add anything else you want here */
