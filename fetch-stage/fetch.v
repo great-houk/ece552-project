@@ -2,12 +2,13 @@ module fetch_stage (
 	input clk, rst_n, stall,
 	input [15:0] next_pc, // Next PC value
 	input branching,
+	input [15:0] instr_data,
 	output [15:0] instruction, // Output instruction
 	output [15:0] pc_out, // Output PC value
 	output [15:0] pc_plus2 //PC+2 value
 );
 	// Instruction memory
-	memory1c_instr imem(.data_out(instruction), .data_in(16'hX), .addr(pc_out), .enable(1'b1), .wr(1'b0), .clk(clk), .rst(~rst_n));
+	assign instruction = stall ? 16'hE000 : instr_data;
 
 	// PC register
 	wire should_inc;

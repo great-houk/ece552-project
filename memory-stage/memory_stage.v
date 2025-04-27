@@ -1,9 +1,9 @@
 module memory_stage(
 	// Inputs
-	input clk, rst_n,
+	input clk, rst_n, stall,
 	input [15:0] addr, 
 	input [15:0] write_data, 
-	input mem_write_en, mem_read_en,
+	input e_mem_write_en, e_mem_read_en,
 	input [15:0] w_reg_write_data,
 	input mem_mem_forwarding,
 	// Passthrough
@@ -12,7 +12,9 @@ module memory_stage(
 	input e_reg_write_en, e_reg_write_src,
 	input e_halt,
 	// Outputs
-	output [15:0] mem_read,
+	output [15:0] m_mem_addr,
+	output [15:0] m_mem_write_data,
+	output m_mem_read_en, m_mem_write_en,
 	// Passthrough
 	input [15:0] m_alu_rslt,
 	input [3:0] m_rd, m_rs, m_rt,
@@ -20,18 +22,19 @@ module memory_stage(
 	input m_halt
 );
 	// Input FFs
+	wire [15:0] mem_forward;
 	wire [15:0] addr_ff, write_data_ff;
 	dff addr_dff [15:0] (
 		.clk(clk),
 		.rst(~rst_n),
 		.d(addr),
 		.q(addr_ff),
-		.wen(1'b1)
+		.wen(~stall)
 	);
 	dff write_data_dff [15:0] (
 		.clk(clk),
 		.rst(~rst_n),
-		.d(write_data),
+		.d(stall ? mem_forward : write_data),
 		.q(write_data_ff),
 		.wen(1'b1)
 	);
@@ -39,16 +42,16 @@ module memory_stage(
 	dff mem_write_en_dff (
 		.clk(clk),
 		.rst(~rst_n),
-		.d(mem_write_en),
+		.d(e_mem_write_en),
 		.q(mem_write_en_ff),
-		.wen(1'b1)
+		.wen(~stall)
 	);
 	dff mem_read_en_dff (
 		.clk(clk),
 		.rst(~rst_n),
-		.d(mem_read_en),
+		.d(e_mem_read_en),
 		.q(mem_read_en_ff),
-		.wen(1'b1)
+		.wen(~stall)
 	);
 
 	// Passthrough FFs
@@ -57,63 +60,62 @@ module memory_stage(
 		.rst(~rst_n),
 		.d(e_rd),
 		.q(m_rd),
-		.wen(1'b1)
+		.wen(~stall)
 	);
 	dff rs_dff [3:0] (
 		.clk(clk),
 		.rst(~rst_n),
 		.d(e_rs),
 		.q(m_rs),
-		.wen(1'b1)
+		.wen(~stall)
 	);
 	dff rt_dff [3:0] (
 		.clk(clk),
 		.rst(~rst_n),
 		.d(e_rt),
 		.q(m_rt),
-		.wen(1'b1)
+		.wen(~stall)
 	);
 	dff alu_rslt_dff [15:0] (
 		.clk(clk),
 		.rst(~rst_n),
 		.d(e_alu_rslt),
 		.q(m_alu_rslt),
-		.wen(1'b1)
+		.wen(~stall)
 	);
+	wire reg_write_en_ff, halt_ff;
 	dff reg_write_en_dff (
 		.clk(clk),
 		.rst(~rst_n),
 		.d(e_reg_write_en),
-		.q(m_reg_write_en),
-		.wen(1'b1)
+		.q(reg_write_en_ff),
+		.wen(~stall)
 	);
 	dff reg_write_src_dff (
 		.clk(clk),
 		.rst(~rst_n),
 		.d(e_reg_write_src),
 		.q(m_reg_write_src),
-		.wen(1'b1)
+		.wen(~stall)
 	);
 	dff halt_dff (
 		.clk(clk),
 		.rst(~rst_n),
 		.d(e_halt),
-		.q(m_halt),
-		.wen(1'b1)
+		.q(halt_ff),
+		.wen(~stall)
 	);
+
+	// Stalling outputs
+	assign m_reg_write_en = stall ? 1'b0 : reg_write_en_ff;
+	assign m_halt = stall ? 1'b0 : halt_ff;
 
 	// Mem-mem forwarding
-	wire [15:0] mem_forward;
 	assign mem_forward = mem_mem_forwarding ? w_reg_write_data : write_data_ff;
 
-	// Instantiate memory read
-	memory1c memory_read(
-		.clk(clk),
-		.rst(~rst_n),
-		.enable(mem_read_en_ff),
-		.addr(addr_ff),
-		.wr(mem_write_en_ff),
-		.data_in(mem_forward),
-		.data_out(mem_read)
-	);
+	// Output memory signals
+	assign m_mem_addr = addr_ff;
+	assign m_mem_write_data = mem_forward;
+	assign m_mem_read_en = mem_read_en_ff;
+	assign m_mem_write_en = mem_write_en_ff;
 endmodule

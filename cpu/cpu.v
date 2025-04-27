@@ -33,7 +33,8 @@ module cpu(
 	wire e_reg_write_en, e_reg_write_src;
 	wire e_halt;
 	// Memory outputs
-	wire [15:0] m_mem_read;
+	wire [15:0] m_mem_addr, m_mem_write_data;
+	wire m_mem_read_en, m_mem_write_en;
 	wire [15:0] m_alu_result;
 	wire [3:0] m_rd, m_rs, m_rt;
 	wire m_reg_write_en, m_reg_write_src;
@@ -43,19 +44,23 @@ module cpu(
 	wire w_reg_write_en;
 	wire [3:0] w_rd;
 	// Hazard Detection Unit outputs
-	wire stall;
+	wire stall_decode;
 	wire flush;
 	wire [1:0] ex_ex_forwarding, ex_mem_forwarding; // 0: none, 1: rs, 2: rt, 3: both
 	wire mem_mem_forwarding;
+	// Cache controller outputs
+	wire stall_fetch, stall_mem;
+	wire [15:0] instr_data, mem_data;
 	//// Five stages of the pipeline
 	// Fetch
 	fetch_stage fetch_stage(
 		// Inputs
 		.clk(clk),
 		.rst_n(rst_n),
-		.stall(stall),
+		.stall(stall_fetch | stall_decode | stall_mem),
 		.next_pc(d_next_pc),
 		.branching(d_branching),
+		.instr_data(instr_data),
 		// Outputs
 		.instruction(f_instruction),
 		.pc_out(pc),
@@ -67,7 +72,7 @@ module cpu(
 		// Inputs
 		.clk(clk),
 		.rst_n(rst_n),
-		.stall(stall),
+		.stall(stall_decode | stall_mem),
 		.flush(flush),
 		.instruction(f_instruction),
 		.pc_plus2(f_pc_plus2),
@@ -107,6 +112,7 @@ module cpu(
 		// Inputs
 		.clk(clk),
 		.rst_n(rst_n),
+		.stall(stall_mem),
 		.reg_rs(d_reg_rs),
 		.reg_rt(d_reg_rt),
 		.imm(d_imm),
@@ -149,10 +155,11 @@ module cpu(
 		// Inputs
 		.clk(clk),
 		.rst_n(rst_n),
+		.stall(stall_mem),
 		.addr(e_alu_result),
 		.write_data(e_reg_rt),
-		.mem_write_en(e_mem_write_en),
-		.mem_read_en(e_mem_read_en),
+		.e_mem_write_en(e_mem_write_en),
+		.e_mem_read_en(e_mem_read_en),
 		.w_reg_write_data(w_reg_write_data),
 		.mem_mem_forwarding(mem_mem_forwarding),
 		// Passthrough
@@ -164,7 +171,10 @@ module cpu(
 		.e_reg_write_src(e_reg_write_src),
 		.e_halt(e_halt),
 		// Outputs
-		.mem_read(m_mem_read),
+		.m_mem_addr(m_mem_addr),
+		.m_mem_write_data(m_mem_write_data),
+		.m_mem_read_en(m_mem_read_en),
+		.m_mem_write_en(m_mem_write_en),
 		// Passthrough
 		.m_rd(m_rd),
 		.m_rs(m_rs),
@@ -181,7 +191,7 @@ module cpu(
 		.clk(clk),
 		.rst_n(rst_n),
 		.alu_result(m_alu_result),
-		.mem_read(m_mem_read),
+		.mem_read(mem_data),
 		.reg_write_src(m_reg_write_src),
 		.m_reg_write_en(m_reg_write_en),
 		.m_rd(m_rd),
@@ -226,11 +236,27 @@ module cpu(
 		.m_rd(m_rd), .m_rt(m_rt),
 		.w_rd(w_rd),
 		// Outputs
-		.stall(stall),
+		.stall_decode(stall_decode),
 		.flush(flush),
 		.ex_ex_forwarding(ex_ex_forwarding),
 		.ex_mem_forwarding(ex_mem_forwarding),
 		.mem_mem_forwarding(mem_mem_forwarding)
+	);
+	// Cache Controller
+	cache_controller cache_controller(
+		// Inputs
+		.clk(clk),
+		.rst_n(rst_n),
+		.instr_addr(pc),
+		.mem_addr(m_mem_addr),
+		.mem_read_en(m_mem_read_en),
+		.mem_write_en(m_mem_write_en),
+		.mem_write_data(m_mem_write_data),
+		// Outputs
+		.instr_invalid(stall_fetch),
+		.mem_invalid(stall_mem),
+		.instr_data(instr_data),
+		.mem_data(mem_data)
 	);
 endmodule
 

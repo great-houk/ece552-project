@@ -35,10 +35,10 @@ module decode_stage(
 	wire [15:0] instruction_ff_raw, instruction_ff;
 	dff instr_dff [15:0] (
 		.clk(clk),
-		.rst(~rst_n),
-		.d(flush ? 16'hE000 : instruction),
+		.rst(1'b0),
+		.d((~rst_n | flush) ? 16'hE000 : instruction),
 		.q(instruction_ff_raw),
-		.wen(~stall)
+		.wen(~rst_n | ~stall)
 	);
 	assign instruction_ff = stall ? 16'hE000 : instruction_ff_raw;
 
@@ -189,7 +189,7 @@ module decode_stage(
 			4'b1110: begin // PCS
 				alu_op = 4'd13;
 				alu_src1 = 1;
-				reg_write_en = 1;
+				reg_write_en = rd != 4'b0000; // NOP if rd == 0
 				reg_write_src = 0;
 			end
 			4'b1111: begin // HLT

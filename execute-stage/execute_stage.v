@@ -1,6 +1,6 @@
 module execute_stage(
 	// Inputs
-	input clk, rst_n,
+	input clk, rst_n, stall,
 	input [15:0] reg_rs, reg_rt, imm, pc_plus2,
 	input alu_src1, alu_src2,
 	input [3:0] alu_op,
@@ -24,18 +24,19 @@ module execute_stage(
 	output e_halt
 );
 	// Input dffs
+	wire [15:0] reg_rs_forward, reg_rt_forward;
 	wire [15:0] reg_rs_ff, reg_rt_ff, imm_ff, pc_plus2_ff;
 	dff reg_rs_dff [15:0] (
 		.clk(clk),
 		.rst(~rst_n),
-		.d(reg_rs),
+		.d(stall ? reg_rs_forward : reg_rs),
 		.q(reg_rs_ff),
 		.wen(1'b1)
 	);
 	dff reg_rt_dff [15:0] (
 		.clk(clk),
 		.rst(~rst_n),
-		.d(reg_rt),
+		.d(stall ? reg_rt_forward : reg_rt),
 		.q(reg_rt_ff),
 		.wen(1'b1)
 	);
@@ -44,14 +45,14 @@ module execute_stage(
 		.rst(~rst_n),
 		.d(imm),
 		.q(imm_ff),
-		.wen(1'b1)
+		.wen(~stall)
 	);
 	dff pc_plus2_dff [15:0] (
 		.clk(clk),
 		.rst(~rst_n),
 		.d(pc_plus2),
 		.q(pc_plus2_ff),
-		.wen(1'b1)
+		.wen(~stall)
 	);
 	wire alu_src1_ff, alu_src2_ff;
 	dff alu_src1_dff (
@@ -59,14 +60,14 @@ module execute_stage(
 		.rst(~rst_n),
 		.d(alu_src1),
 		.q(alu_src1_ff),
-		.wen(1'b1)
+		.wen(~stall)
 	);
 	dff alu_src2_dff (
 		.clk(clk),
 		.rst(~rst_n),
 		.d(alu_src2),
 		.q(alu_src2_ff),
-		.wen(1'b1)
+		.wen(~stall)
 	);
 	wire [3:0] alu_op_ff;
 	dff alu_op_dff [3:0] (
@@ -74,8 +75,18 @@ module execute_stage(
 		.rst(~rst_n),
 		.d(alu_op),
 		.q(alu_op_ff),
-		.wen(1'b1)
+		.wen(~stall)
 	);
+
+	// Forwarding
+	assign reg_rs_forward = 
+		ex_ex_forwarding[0] ? m_alu_result :
+		ex_mem_forwarding[0] ? w_reg_write_data :
+		reg_rs_ff;
+	assign reg_rt_forward =
+		ex_ex_forwarding[1] ? m_alu_result :
+		ex_mem_forwarding[1] ? w_reg_write_data :
+		reg_rt_ff;
 
 	// Passthrough dffs
 	dff rs_dff [3:0] (
@@ -83,71 +94,63 @@ module execute_stage(
 		.rst(~rst_n),
 		.d(d_rs),
 		.q(e_rs),
-		.wen(1'b1)
+		.wen(~stall)
 	);
 	dff rt_dff [3:0] (
 		.clk(clk),
 		.rst(~rst_n),
 		.d(d_rt),
 		.q(e_rt),
-		.wen(1'b1)
+		.wen(~stall)
 	);
 	dff rd_dff [3:0] (
 		.clk(clk),
 		.rst(~rst_n),
 		.d(d_rd),
 		.q(e_rd),
-		.wen(1'b1)
+		.wen(~stall)
 	);
-	assign e_reg_rt = reg_rt_ff; // Pass through reg_rt
+	assign e_reg_rt = reg_rt_forward; // Pass through reg_rt with forwarding
 	dff mem_write_en_dff (
 		.clk(clk),
 		.rst(~rst_n),
 		.d(d_mem_write_en),
 		.q(e_mem_write_en),
-		.wen(1'b1)
+		.wen(~stall)
 	);
 	dff mem_read_en_dff (
 		.clk(clk),
 		.rst(~rst_n),
 		.d(d_mem_read_en),
 		.q(e_mem_read_en),
-		.wen(1'b1)
+		.wen(~stall)
 	);
 	dff reg_write_en_dff (
 		.clk(clk),
 		.rst(~rst_n),
 		.d(d_reg_write_en),
 		.q(e_reg_write_en),
-		.wen(1'b1)
+		.wen(~stall)
 	);
 	dff reg_write_src_dff (
 		.clk(clk),
 		.rst(~rst_n),
 		.d(d_reg_write_src),
 		.q(e_reg_write_src),
-		.wen(1'b1)
+		.wen(~stall)
 	);
 	dff halt_dff (
 		.clk(clk),
 		.rst(~rst_n),
 		.d(d_halt),
 		.q(e_halt),
-		.wen(1'b1)
+		.wen(~stall)
 	);
 
 	// Assign sources
 	wire [15:0] alu_src1_data, alu_src2_data;
-	assign alu_src1_data = 
-		alu_src1_ff ? pc_plus2_ff :
-		ex_ex_forwarding[0] ? m_alu_result :
-		ex_mem_forwarding[0] ? w_reg_write_data :
-		reg_rs_ff;
-	assign alu_src2_data = 
-		alu_src2_ff ? imm_ff :
-		ex_ex_forwarding[1] ? m_alu_result :
-		ex_mem_forwarding[1] ? w_reg_write_data :
-		reg_rt_ff;
+	assign alu_src1_data = alu_src1_ff ? pc_plus2_ff : reg_rs_forward;
+	assign alu_src2_data = alu_src2_ff ? imm_ff : reg_rt_forward;
 
 	// Calculate possible ALU results
 	// Add/sub
@@ -220,6 +223,6 @@ module execute_stage(
 		.rst(~rst_n),
 		.d(new_flags),
 		.q(flags),
-		.wen(1'b1)
+		.wen(~stall)
 	);
 endmodule

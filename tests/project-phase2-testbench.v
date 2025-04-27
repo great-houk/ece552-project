@@ -1,4 +1,4 @@
-module cpu_ptb();
+module cpu_tb2();
   
 
 	wire [15:0] PC;
@@ -135,32 +135,32 @@ module cpu_ptb();
 	// Is processor halted (1 bit signal)
 	
 
-	assign Inst = DUT.f_instruction;
 	//Instruction fetched in the current cycle
+	assign Inst = DUT.f_instruction;
 	
-	assign RegWrite = DUT.w_reg_write_en;
 	// Is register file being written to in this cycle, one bit signal (1 means yes, 0 means no)
+	assign RegWrite = DUT.w_reg_write_en;
   
-	assign WriteRegister = DUT.w_rd;
 	// If above is true, this should hold the name of the register being written to. (4 bit signal)
+	assign WriteRegister = DUT.w_rd;
 	
-	assign WriteData = DUT.execute_stage.alu_result; //Change this to cpu.memorystage.memforward
 	// If above is true, this should hold the Data being written to the register. (16 bits)
+	assign WriteData = DUT.w_reg_write_data;
 	
-	assign MemRead = (DUT.memory_stage.mem_read_en_ff & ~DUT.memory_stage.mem_write_en_ff);
 	// Is memory being read from, in this cycle. one bit signal (1 means yes, 0 means no)
+	assign MemRead = (DUT.memory_stage.mem_read_en_ff & ~DUT.memory_stage.mem_write_en_ff);
 	
-	assign MemWrite = (DUT.memory_stage.mem_write_en_ff);
 	// Is memory being written to, in this cycle (1 bit signal)
+	assign MemWrite = (DUT.memory_stage.mem_write_en_ff);
 	
-	assign MemAddress = DUT.memory_stage.e_alu_rslt;
 	// If there's a memory access this cycle, this should hold the address to access memory with (for both reads and writes to memory, 16 bits)
+	assign MemAddress = DUT.memory_stage.addr_ff;
 	
-	assign MemDataIn = DUT.memory_stage.mem_forward;
 	// If there's a memory write in this cycle, this is the Data being written to memory (16 bits)
+	assign MemDataIn = DUT.memory_stage.mem_forward;
 	
-	assign MemDataOut = DUT.memory_stage.mem_read;
 	// If there's a memory read in this cycle, this is the data being read out of memory (16 bits)
+	assign MemDataOut = DUT.memory_stage.mem_read;
 
 	//Tom's tracked Vars
 	// assign Stall = DUT.stall;
