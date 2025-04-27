@@ -33,15 +33,6 @@ module cache_controller(
 		.data_out(mem_data)
 	);
 
-	reg [2:0] counter;
-	always @(posedge clk or negedge rst_n) begin
-		if (!rst_n) begin
-			counter <= 3'b000;
-		end else begin
-			counter <= counter + 1;
-		end
-	end
-
-	assign instr_invalid = counter[1];
-	assign mem_invalid = counter[2];
+	assign instr_invalid = 1'b0;
+	assign mem_invalid = 1'b0;
 endmodule

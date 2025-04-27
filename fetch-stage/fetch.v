@@ -12,8 +12,8 @@ module fetch_stage (
 
 	// PC register
 	wire should_inc;
-	// Don't change PC on halt if not branching, or on stall
-	assign should_inc = (branching | (instruction[15:12] != 4'hF)) & ~stall; 
+	// Don't change PC on stall or halt if not branching
+	assign should_inc = branching | ~((instruction[15:12] == 4'hF) | stall);
 	dff pc_dff [15:0] (.q(pc_out), .d(next_pc), .wen(should_inc), .clk(clk), .rst(~rst_n));
 
 	// Generate PC+2
