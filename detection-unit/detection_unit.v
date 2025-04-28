@@ -33,7 +33,7 @@
 	wire ex_ex, ex_mem;
 
 	// EX-EX Forwarding
-	assign ex_ex = m_reg_write_en & (m_reg_write_src == 1'b0) & (e_rd != 4'b0000);
+	assign ex_ex = m_reg_write_en & (m_reg_write_src == 1'b0) & (m_rd != 4'b0000);
 	assign ex_ex_forwarding = {
 		ex_ex & m_rd == e_rt,
 		ex_ex & m_rd == e_rs

@@ -33,6 +33,12 @@ module cache_controller(
 		.data_out(mem_data)
 	);
 
-	assign instr_invalid = 1'b0;
-	assign mem_invalid = 1'b0;
+	reg rand_1, rand_2;
+	always @(posedge clk or negedge rst_n) begin
+		rand_1 <= $random % 2;
+		rand_2 <= $random % 2;
+	end
+
+	assign instr_invalid = rand_1;
+	assign mem_invalid = rand_2;
 endmodule
