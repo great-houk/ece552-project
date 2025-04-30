@@ -106,6 +106,25 @@ module memory_stage(
 		.wen(~stall)
 	);
 
+	//d-cache instantiation
+	wire [15:0] dcache_data_out;
+	wire dcache_hit, dcache_miss, dcache_stall;
+
+	d_cache data_cache (
+		.clk(clk),
+		.rst_n(rst_n),
+		.addr(addr_ff),              // from dff that stores addr
+		.data_in(mem_forward),       // write data (may be forwarded)
+		.read_en(mem_read_en_ff),    // from pipeline dff
+		.write_en(mem_write_en_ff),  // from pipeline dff
+		.data_out(dcache_data_out),
+		.hit(dcache_hit),
+		.miss(dcache_miss),
+		.stall(dcache_stall)
+	);
+
+
+
 	// Stalling outputs
 	assign m_reg_write_en = stall ? 1'b0 : reg_write_en_ff;
 	assign m_halt = stall ? 1'b0 : halt_ff;
