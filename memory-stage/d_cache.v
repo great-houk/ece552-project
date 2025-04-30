@@ -11,21 +11,13 @@ module d_cache (
     output stall
 );
 
-    localparam NUM_BLOCKS = 128;
-    localparam NUM_SETS = 64;
-    localparam OFFSET_BITS = 4;
-    localparam INDEX_BITS = 6;
-    localparam TAG_BITS = 6;
-
     wire [3:0] offset = addr[3:0];
     wire [5:0] index = addr[9:4];
     wire [5:0] tag = addr[15:10];
     wire [2:0] word_offset = offset[3:1];
-
     wire [127:0] block_enable_way0;
     wire [127:0] block_enable_way1;
     wire [7:0] word_enable;
-
     wire [15:0] data_out_way0;
     wire [15:0] data_out_way1;
     wire [7:0] meta_out_way0;
@@ -35,7 +27,7 @@ module d_cache (
     assign block_enable_way1 = 1'b1 << {index, 1'b1};
     assign word_enable = 8'b1 << word_offset;
 
-    // Instantiate data arrays
+    // Data arrays
     DataArray data_way0(
         .clk(clk), .rst(~rst_n), .DataIn(data_in), .Write(write_en),
         .BlockEnable(block_enable_way0), .WordEnable(word_enable), .DataOut(data_out_way0)
@@ -46,7 +38,7 @@ module d_cache (
         .BlockEnable(block_enable_way1), .WordEnable(word_enable), .DataOut(data_out_way1)
     );
 
-    // Instantiate metadata arrays
+    // Metadata arrays
     MetaDataArray meta_way0(
         .clk(clk), .rst(~rst_n), .DataIn({2'b0, tag}), .Write(1'b0),
         .BlockEnable(block_enable_way0), .DataOut(meta_out_way0)
