@@ -13,9 +13,8 @@ module cache_controller(
     output mem_invalid,
     output [15:0] instr_data,
     output [15:0] mem_data,
-    output stall
 );
-
+/*
     //D-cache Internal signals
     wire data_valid;
     wire enable, enable_mem_read, cache_write_en, addr_reg_en, data_out_en;
@@ -34,7 +33,7 @@ module cache_controller(
     wire [15:0] curr_mem_addr;
     wire [15:0] mem_data_out;
 	wire [15:0] cache_data_in;
-	
+	*/
 
 	// I-cache FSM signals
 	wire [2:0] i_state, i_state_next;
@@ -178,9 +177,26 @@ module cache_controller(
 		.BlockEnable(i_block_enable), 
 		.DataOut()  // Not used for write
 	);
+	assign instr_invalid = (i_state != IDLE);
+
+
+	//d_mem
+	memory1c memory_read(
+		.clk(clk),
+		.rst(~rst_n),
+		.enable(mem_read_en),
+		.addr(mem_addr),
+		.wr(mem_write_en),
+		.data_in(mem_write_data),
+		.data_out(mem_data)
+	);
+
+
+
+
 ///////////////////////////////////////////////////
 
-
+/*
 	//D-cache FSM
     dff state_ff [2:0] (.clk(clk), 
                       .rst(~rst_n), 
@@ -314,8 +330,9 @@ module cache_controller(
         .BlockEnable(block_enable), 
         .DataOut()  // Not used for write
     );
-
+	assign mem_invalid = (state != IDLE);
+    */
     
-    assign stall = (state != IDLE);
+	assign mem_invalid = 1'b0;;
 
 endmodule
