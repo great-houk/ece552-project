@@ -7,9 +7,6 @@ module fetch_stage (
 	output [15:0] pc_out, // Output PC value
 	output [15:0] pc_plus2 //PC+2 value
 );
- 	wire [15:0] icache_data_out;
-    wire icache_hit, icache_miss, icache_stall;
-
 	// Instantiate instruction cache
     i_cache instr_cache (
         .clk(clk),
