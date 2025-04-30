@@ -2,7 +2,7 @@ module fetch_stage (
 	input clk, rst_n, stall,
 	input [15:0] next_pc, // Next PC value
 	input branching,
-	// input [15:0] instr_data,
+	input [15:0] instr_data,
 	output [15:0] instruction, // Output instruction
 	output [15:0] pc_out, // Output PC value
 	output [15:0] pc_plus2 //PC+2 value
@@ -27,8 +27,6 @@ module fetch_stage (
 
 	// PC register
 	wire should_inc;
-	assign should_inc = branching | ~((instruction[15:12] == 4'hF) | stall);
-
 	// Don't change PC on stall or halt if not branching
 	assign should_inc = branching | ~((instruction[15:12] == 4'hF) | stall);
 	dff pc_dff [15:0] (.q(pc_out), .d(next_pc), .wen(should_inc), .clk(clk), .rst(~rst_n));
