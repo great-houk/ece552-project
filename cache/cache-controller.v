@@ -9,7 +9,7 @@ module cache_controller(
     input [15:0] mem_write_data,
     input miss,
     // Outputs
-    output instr_invalid,	//are these needed?
+    output instr_invalid,	
     output mem_invalid,
     output [15:0] instr_data,
     output [15:0] mem_data,
@@ -177,8 +177,8 @@ module cache_controller(
 		.BlockEnable(i_block_enable), 
 		.DataOut()  // Not used for write
 	);
+	
 	assign instr_invalid = (i_state != IDLE);
-
 
 	//d_mem
 	memory1c memory_read(
