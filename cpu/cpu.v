@@ -258,6 +258,7 @@ module cpu(
 		.instr_data(instr_data),
 		.mem_data(mem_data)
 	);
+	
 endmodule
 
 `default_nettype wire

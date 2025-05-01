@@ -5,8 +5,7 @@ module i_cache (
     input read_en,
     output [15:0] data_out,
     output hit,
-    output miss,
-    output stall
+    output miss
 );
 
     wire [3:0] offset = addr[3:0];
@@ -60,7 +59,6 @@ module i_cache (
 
     assign hit = selected_hit;
     assign miss = read_en & ~selected_hit;
-    assign stall = read_en & ~selected_hit;
     assign data_out = (read_en && selected_hit) ? selected_data : 16'h0000;
 
 endmodule
