@@ -1,70 +1,55 @@
+`default_nettype none
+
 module d_cache (
-    input clk,
-    input rst_n,
-    input [15:0] addr,
-    input [15:0] data_in,
-    input read_en,
-    input write_en,
-    output [15:0] data_out,
-    output hit,
-    output miss,
-    output stall
+	input wire clk, rst_n,
+	input wire [15:0] addr,
+	input wire [15:0] data_in,
+	input wire read_en,
+	input wire write_en,
+	output wire [15:0] data_out,
+	output wire invalid
 );
+	wire [4:0] tag;
+	wire [127:0] block_enable;
+	wire [7:0] word_enable;
+	assign block_enable = 128'b1 << addr[10:4];
+	assign word_enable = 8'b1 << addr[3:1];
+	assign tag = addr[15:11];
 
-    wire [3:0] offset = addr[3:0];
-    wire [5:0] index = addr[9:4];
-    wire [5:0] tag = addr[15:10];
-    wire [2:0] word_offset = offset[3:1];
-    wire [127:0] block_enable_way0;
-    wire [127:0] block_enable_way1;
-    wire [7:0] word_enable;
-    wire [15:0] data_out_way0;
-    wire [15:0] data_out_way1;
-    wire [7:0] meta_out_way0;
-    wire [7:0] meta_out_way1;
+	// Cache Sets
+	wire [15:0] set0_out, set1_out;
+	DataArray set0(
+		.clk(clk), .rst(~rst_n), .DataIn(data_in), .Write(write_en),
+		.BlockEnable(block_enable), .WordEnable(word_enable), .DataOut(set0_out)
+	);
 
-    assign block_enable_way0 = 1'b1 << {index, 1'b0};
-    assign block_enable_way1 = 1'b1 << {index, 1'b1};
-    assign word_enable = 8'b1 << word_offset;
+	DataArray set1(
+		.clk(clk), .rst(~rst_n), .DataIn(data_in), .Write(write_en),
+		.BlockEnable(block_enable), .WordEnable(word_enable), .DataOut(set1_out)
+	);
 
-    // Data arrays
-    DataArray data_way0(
-        .clk(clk), .rst(~rst_n), .DataIn(data_in), .Write(write_en),
-        .BlockEnable(block_enable_way0), .WordEnable(word_enable), .DataOut(data_out_way0)
-    );
+	// Metadata arrays
+	wire [7:0] meta0_in, meta1_in, meta0_out, meta1_out;
+	wire set0_valid, set1_valid;
+	MetaDataArray set0_meta(
+		.clk(clk), .rst(~rst_n), .DataIn(meta0_in), .Write(read_en | write_en),
+		.BlockEnable(block_enable), .DataOut(meta0_out)
+	);
+	assign set0_valid = (meta0_out[7:3] == tag) && meta0_out[1];
 
-    DataArray data_way1(
-        .clk(clk), .rst(~rst_n), .DataIn(data_in), .Write(write_en),
-        .BlockEnable(block_enable_way1), .WordEnable(word_enable), .DataOut(data_out_way1)
-    );
+	MetaDataArray set1_meta(
+		.clk(clk), .rst(~rst_n), .DataIn(meta1_in), .Write(read_en | write_en),
+		.BlockEnable(block_enable), .DataOut(meta1_out)
+	);
+	assign set1_valid = (meta1_out[7:3] == tag) && meta1_out[1];
 
-    // Metadata arrays
-    MetaDataArray meta_way0(
-        .clk(clk), .rst(~rst_n), .DataIn({2'b0, tag}), .Write(1'b0),
-        .BlockEnable(block_enable_way0), .DataOut(meta_out_way0)
-    );
-
-    MetaDataArray meta_way1(
-        .clk(clk), .rst(~rst_n), .DataIn({2'b0, tag}), .Write(1'b0),
-        .BlockEnable(block_enable_way1), .DataOut(meta_out_way1)
-    );
-
-    wire valid_way0 = meta_out_way0[7];
-    wire valid_way1 = meta_out_way1[7];
-    wire [5:0] tag_way0 = meta_out_way0[5:0];
-    wire [5:0] tag_way1 = meta_out_way1[5:0];
-
-    wire hit_way0 = valid_way0 && (tag_way0 == tag);
-    wire hit_way1 = valid_way1 && (tag_way1 == tag);
-    wire selected_hit = hit_way0 || hit_way1;
-
-    wire [15:0] selected_data = hit_way0 ? data_out_way0 : hit_way1 ? data_out_way1 : 16'hXXXX;
-
-    wire access_en = read_en | write_en;
-
-    assign hit = selected_hit;
-    assign miss = access_en & ~selected_hit;
-    assign stall = access_en & ~selected_hit;
-    assign data_out = (read_en && selected_hit) ? selected_data : 16'h0000;
-
+	// Logic Signals
+	assign invalid = ~(set0_valid | set1_valid) & (read_en | write_en);
+	wire chosen_set;
+	assign chosen_set = (read_en) ? set0_valid : (write_en) ? meta0_out[0] : 1'b0;
+	assign meta0_in = (write_en & chosen_set == 1'b0) ? {tag, 2'b01, 1'b1} : {meta0_out[7:1], chosen_set == 1'b0};
+	assign meta1_in = (write_en & chosen_set == 1'b1) ? {tag, 2'b01, 1'b1} : {meta1_out[7:1], chosen_set == 1'b1};
+	assign data_out = (chosen_set == 1'b0) ? set0_out : set1_out;
 endmodule
+
+`default_nettype wire
