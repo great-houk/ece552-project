@@ -29,8 +29,11 @@ module cache_controller(
 
 	// D Cache FSM
 	wire [2:0] data_read_amount, data_read_amount_next;
+	wire [2:0] data_write_amount, data_write_amount_next;
 	wire mem_reading;
 	wire data_cache_invalid;
+	wire [15:0] mem_4c_read;
+	wire mem_4c_valid;
 
 	// FSM
 	assign mem_reading = (data_read_amount != 3'b0) | data_cache_invalid;
@@ -39,17 +42,22 @@ module cache_controller(
 							.wen(mem_reading), 
 							.d(data_read_amount_next), 
 							.q(data_read_amount));
+	dff data_write_amount_ff [2:0] (.clk(clk),
+							.rst(~rst_n), 
+							.wen(mem_4c_valid), 
+							.d(data_write_amount_next), 
+							.q(data_write_amount));
 	assign data_read_amount_next = data_read_amount + 1'b1;
+	assign data_write_amount_next = data_write_amount + 1'b1;
+	
 
 	// 4 Cycle Mem
-	wire [15:0] mem_4c_read;
-	wire mem_4c_valid;
 	memory4c mem_4c(
 		.clk(clk),
 		.rst(~rst_n),
-		.enable(mem_reading),
-		.addr(mem_reading ? {mem_addr[15:4], data_read_amount, 1'b0} : mem_addr),
-		.wr(mem_reading ? 1'b0 : mem_write_en),
+		.enable(mem_invalid ? mem_reading : mem_write_en),
+		.addr(mem_invalid ? {mem_addr[15:4], data_read_amount, 1'b0} : mem_addr),
+		.wr(mem_invalid ? 1'b0 : mem_write_en),
 		.data_in(mem_write_data),
 		.data_out(mem_4c_read),
 		.data_valid(mem_4c_valid)
@@ -59,7 +67,7 @@ module cache_controller(
 	d_cache dcache(
 		.clk(clk),
 		.rst_n(rst_n),
-		.addr(mem_invalid ? {mem_addr[15:4], data_read_amount, 1'b0} : mem_addr),
+		.addr(mem_invalid ? {mem_addr[15:4], data_write_amount, 1'b0} : mem_addr),
 		.data_in(mem_invalid ? mem_4c_read : mem_write_data),
 		.read_en(mem_read_en),
 		.write_en(mem_invalid ? mem_4c_valid : mem_write_en),

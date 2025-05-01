@@ -46,7 +46,7 @@ module d_cache (
 	// Logic Signals
 	assign invalid = ~(set0_valid | set1_valid) & (read_en | write_en);
 	wire chosen_set;
-	assign chosen_set = (read_en) ? set0_valid : (write_en) ? meta0_out[0] : 1'b0;
+	assign chosen_set = (set0_valid | set1_valid) ? set1_valid : meta0_out[0];
 	assign meta0_in = (write_en & chosen_set == 1'b0) ? {tag, 2'b01, 1'b1} : {meta0_out[7:1], chosen_set == 1'b0};
 	assign meta1_in = (write_en & chosen_set == 1'b1) ? {tag, 2'b01, 1'b1} : {meta1_out[7:1], chosen_set == 1'b1};
 	assign data_out = (chosen_set == 1'b0) ? set0_out : set1_out;
