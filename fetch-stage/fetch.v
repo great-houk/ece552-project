@@ -7,18 +7,6 @@ module fetch_stage (
 	output [15:0] pc_out, // Output PC value
 	output [15:0] pc_plus2 //PC+2 value
 );
-	// Instantiate instruction cache
-    i_cache instr_cache (
-        .clk(clk),
-        .rst_n(rst_n),
-        .addr(next_pc),
-        .read_en(1'b1),  // always fetching instruction every cycle
-        .data_out(icache_data_out),
-        .hit(icache_hit),
-        .miss(icache_miss),
-        .stall(icache_stall)
-    );
-
 	// Instruction memory
 	assign instruction = stall ? 16'hE000 : instr_data;
 

@@ -177,7 +177,7 @@ module cache_controller(
 		.DataOut()  // Not used for write
 	);
 	
-	assign instr_invalid = (i_state != IDLE);
+	assign instr_invalid = (i_state_next != IDLE);
 
 	//d_mem
 	memory1c memory_read(
