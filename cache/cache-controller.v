@@ -7,12 +7,11 @@ module cache_controller(
     input mem_read_en,
     input mem_write_en,
     input [15:0] mem_write_data,
-    input miss,
     // Outputs
     output instr_invalid,	
     output mem_invalid,
     output [15:0] instr_data,
-    output [15:0] mem_data,
+    output [15:0] mem_data
 );
 /*
     //D-cache Internal signals
@@ -22,7 +21,6 @@ module cache_controller(
     wire [2:0] state, state_next;
     wire [127:0] block_enable;
     wire [7:0] word_enable;
-    parameter IDLE = 3'b000, REQUEST = 3'b001, WAIT_DATA = 3'b010, UPDATE_CACHE = 3'b011, DONE = 3'b100;
 	wire [2:0] write_word_count, write_word_count_next;
     wire write_word_count_en;
 	wire [15:0] addr_reg;
@@ -36,6 +34,7 @@ module cache_controller(
 	*/
 
 	// I-cache FSM signals
+	parameter IDLE = 3'b000, REQUEST = 3'b001, WAIT_DATA = 3'b010, UPDATE_CACHE = 3'b011, DONE = 3'b100;
 	wire [2:0] i_state, i_state_next;
 	wire [2:0] i_word_count, i_word_count_next;
 	wire i_word_count_en;
@@ -333,6 +332,6 @@ module cache_controller(
 	assign mem_invalid = (state != IDLE);
     */
     
-	assign mem_invalid = 1'b0;;
+	assign mem_invalid = 1'b0;
 
 endmodule
