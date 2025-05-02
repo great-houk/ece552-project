@@ -13,8 +13,8 @@ module cpu_tb3();
 	wire [15:0] MemAddress;
 	wire [15:0] MemDataIn;	/* Read from Memory */
 	wire [15:0] MemDataOut;	/* Written to Memory */
-	wire		  DCacheHit;
-	wire		  ICacheHit;
+	wire		  DCacheMiss;
+	wire		  ICacheMiss;
 	wire		  DCacheReq;
 	wire		  ICacheReq;
 
@@ -102,17 +102,19 @@ module cpu_tb3();
 			if (Halt || RegWrite || MemWrite) begin
 				inst_count = inst_count + 1;
 			end
-	 if (DCacheHit) begin
-				DCacheHit_count = DCacheHit_count + 1;	 	
+	 if (DCacheMiss) begin
+				DCacheHit_count = DCacheHit_count - 1;
 			end	
-	 if (ICacheHit) begin
-				ICacheHit_count = ICacheHit_count + 1;	 	
+	 if (ICacheMiss) begin
+				ICacheHit_count = ICacheHit_count - 1;
 	 end	 
 	 if (DCacheReq) begin
-				DCacheReq_count = DCacheReq_count + 1;	 	
+				DCacheReq_count = DCacheReq_count + 1;
+				DCacheHit_count = DCacheHit_count + 1;
 			end	
 	 if (ICacheReq) begin
-				ICacheReq_count = ICacheReq_count + 1;	 	
+				ICacheReq_count = ICacheReq_count + 1;
+				ICacheHit_count = ICacheHit_count + 1;
 	 end 
 
 			$fdisplay(sim_log_file, "SIMLOG:: Cycle %d PC: %8x I: %8x R: %d %3d %8x M: %d %d %8x %8x %8x",
@@ -193,20 +195,23 @@ module cpu_tb3();
 	// If there's a memory read in this cycle, this is the data being read out of memory (16 bits)
 	assign MemDataOut = DUT.mem_data;
 
-	assign ICacheReq = 1'b0; // DUT.p0.icr;
 	// Signal indicating a valid instruction read request to cache
+	assign ICacheReq = DUT.fetch_stage.should_inc;
 	
-	assign ICacheHit = 1'b0; // DUT.p0.ich;
 	// Signal indicating a valid instruction cache hit
+	assign ICacheMiss =
+		DUT.cache_controller.read_amount == 3'b0 &&
+		DUT.cache_controller.write_amount == 3'b0 &&
+		DUT.cache_controller.state_next == 2'h1;
 
-	assign DCacheReq = 1'b0; // DUT.p0.dcr;
 	// Signal indicating a valid instruction data read or write request to cache
+	assign DCacheReq = (DUT.m_mem_read_en | DUT.m_mem_write_en) & ~DUT.stall_mem;
 	
-	assign DCacheHit = 1'b0; // DUT.p0.dch;
-	// Signal indicating a valid data cache hit
-
+	// Signal indicating a valid data cache miss
+	assign DCacheMiss =
+		DUT.cache_controller.read_amount == 3'b0 &&
+		DUT.cache_controller.write_amount == 3'b0 &&
+		DUT.cache_controller.state_next == 2'h2;
 
 	/* Add anything else you want here */
-
-	
 endmodule
