@@ -1,11 +1,12 @@
 `default_nettype none
 
-module d_cache (
+module cache (
 	input wire clk, rst_n,
 	input wire [15:0] addr,
 	input wire [15:0] data_in,
 	input wire read_en,
 	input wire write_en,
+	input wire write_meta,
 	output wire [15:0] data_out,
 	output wire invalid
 );
@@ -38,7 +39,7 @@ module d_cache (
 	assign set0_valid = (meta0_out[7:3] == tag) && meta0_out[1];
 
 	MetaDataArray set1_meta(
-		.clk(clk), .rst(~rst_n), .DataIn(meta1_in), .Write(read_en | write_en),
+		.clk(clk), .rst(~rst_n), .DataIn(meta1_in), .Write(write_meta),
 		.BlockEnable(block_enable), .DataOut(meta1_out)
 	);
 	assign set1_valid = (meta1_out[7:3] == tag) && meta1_out[1];

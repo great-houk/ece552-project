@@ -196,16 +196,22 @@ module cpu_tb3();
 	assign MemDataOut = DUT.mem_data;
 
 	// Signal indicating a valid instruction read request to cache
-	assign ICacheReq = 1'b0; // DUT.p0.icr;
+	assign ICacheReq = DUT.fetch_stage.should_inc;
 	
 	// Signal indicating a valid instruction cache hit
-	assign ICacheHit = 1'b0; // DUT.p0.ich;
+	assign ICacheMiss =
+		DUT.cache_controller.read_amount == 3'b0 &&
+		DUT.cache_controller.write_amount == 3'b0 &&
+		DUT.cache_controller.state_next == 2'h1;
 
 	// Signal indicating a valid instruction data read or write request to cache
 	assign DCacheReq = (DUT.m_mem_read_en | DUT.m_mem_write_en) & ~DUT.stall_mem;
 	
 	// Signal indicating a valid data cache miss
-	assign DCacheMiss = (DUT.cache_controller.data_read_amount == 3'b0) && DUT.cache_controller.data_cache_invalid;
+	assign DCacheMiss =
+		DUT.cache_controller.read_amount == 3'b0 &&
+		DUT.cache_controller.write_amount == 3'b0 &&
+		DUT.cache_controller.state_next == 2'h2;
 
 	/* Add anything else you want here */
 endmodule
