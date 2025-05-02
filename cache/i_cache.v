@@ -2,7 +2,12 @@ module i_cache (
     input clk,
     input rst_n,
     input [15:0] addr,
+    input [15:0] data_in,
+    input write_en,
     input read_en,
+    input write_tag_en,
+    input [127:0] ext_block_enable,
+    input [7:0] ext_word_enable,
     output [15:0] data_out,
     output hit,
     output miss
@@ -20,29 +25,37 @@ module i_cache (
     wire [7:0] meta_out_way0;
     wire [7:0] meta_out_way1;
 
-    assign block_enable_way0 = 1'b1 << {index, 1'b0};
-    assign block_enable_way1 = 1'b1 << {index, 1'b1};
-    assign word_enable = 8'b1 << word_offset;
+    wire [127:0] read_block_enable_way0;
+    wire [127:0] read_block_enable_way1;
+    wire [7:0] read_word_enable;
+    
+    assign read_block_enable_way0 = 1'b1 << {index, 1'b0};
+    assign read_block_enable_way1 = 1'b1 << {index, 1'b1};
+    assign read_word_enable = 8'b1 << word_offset;
+
+    assign block_enable_way0 = write_en ? ext_block_enable : read_block_enable_way0;
+    assign block_enable_way1 = write_en ? ext_block_enable : read_block_enable_way1;
+    assign word_enable = write_en ? ext_word_enable : read_word_enable;
 
     // Data arrays, read-only
     DataArray data_way0(
-        .clk(clk), .rst(~rst_n), .DataIn(16'h0000), .Write(1'b0),
+        .clk(clk), .rst(~rst_n), .DataIn(data_in), .Write(write_en),
         .BlockEnable(block_enable_way0), .WordEnable(word_enable), .DataOut(data_out_way0)
     );
 
     DataArray data_way1(
-        .clk(clk), .rst(~rst_n), .DataIn(16'h0000), .Write(1'b0),
+        .clk(clk), .rst(~rst_n), .DataIn(data_in), .Write(write_en),
         .BlockEnable(block_enable_way1), .WordEnable(word_enable), .DataOut(data_out_way1)
     );
 
     // Metadata arrays, read-only unless miss handler updates
     MetaDataArray meta_way0(
-        .clk(clk), .rst(~rst_n), .DataIn({2'b0, tag}), .Write(1'b0),
+        .clk(clk), .rst(~rst_n), .DataIn({1'b1, 1'b0, tag}), .Write(write_tag_en),
         .BlockEnable(block_enable_way0), .DataOut(meta_out_way0)
     );
 
     MetaDataArray meta_way1(
-        .clk(clk), .rst(~rst_n), .DataIn({2'b0, tag}), .Write(1'b0),
+        .clk(clk), .rst(~rst_n), .DataIn({1'b1, 1'b0, tag}), .Write(write_tag_en),
         .BlockEnable(block_enable_way1), .DataOut(meta_out_way1)
     );
 

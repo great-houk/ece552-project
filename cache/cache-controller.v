@@ -16,13 +16,22 @@ module cache_controller(
 
     // I-cache signals
     wire i_cache_hit, i_cache_miss;
-
-    // Instantiating instruction cache
+    wire i_write_cache, i_write_tag;
+    wire [127:0] i_block_enable;
+    wire [7:0] i_word_enable;
+    wire [15:0] i_cache_data_in;
+    
+    // Instantiating instruction cache with write capability
     i_cache instr_cache(
         .clk(clk),
         .rst_n(rst_n),
         .addr(instr_addr),
-        .read_en(1'b1), // I-cache always reads
+        .data_in(i_cache_data_in),         // Connect data input
+        .read_en(1'b1),                    // I-cache always reads
+        .write_en(i_write_cache),          // Connect write enable
+        .write_tag_en(i_write_tag),        // Connect tag write enable
+        .ext_block_enable(i_block_enable), // Connect block enable
+        .ext_word_enable(i_word_enable),   // Connect word enable
         .data_out(instr_data),
         .hit(i_cache_hit),
         .miss(i_cache_miss)
@@ -43,10 +52,6 @@ module cache_controller(
     wire i_enable_mem_read;
     wire [2:0] i_write_word_count, i_write_word_count_next;
     wire i_write_word_count_en;
-    wire i_write_cache, i_write_tag;
-    wire [127:0] i_block_enable;
-    wire [7:0] i_word_enable;
-    wire [15:0] i_cache_data_in;
 
     // I-cache state register
     dff i_state_ff [2:0] (
@@ -65,7 +70,7 @@ module cache_controller(
         .q(i_word_count)
     );
 
-    // Modified: Keep memory read enabled during WAIT_DATA state too
+    // Keep memory read enabled during WAIT_DATA state
     assign i_enable_mem_read = (i_state == REQUEST) || (i_state == WAIT_DATA);
     
     // Store original address when miss occurs
@@ -112,8 +117,7 @@ module cache_controller(
         .data_valid(i_data_valid)
     );
 
-    // Modified: State machine transitions for miss handling
-    // Added explicit state to stay in WAIT_DATA until data is valid
+    // State machine transitions for miss handling
     assign i_state_next = 
         (i_state == IDLE && i_cache_miss) ? REQUEST :
         (i_state == REQUEST) ? WAIT_DATA :
@@ -129,8 +133,7 @@ module cache_controller(
     assign i_word_count_next = (i_state == IDLE) ? 3'b000 : 
                               (i_state == UPDATE_CACHE) ? (i_word_count + 1'b1) : i_word_count;
 
-    // Modified: Data buffer write enable signals - moved from UPDATE_CACHE to WAIT_DATA
-    // This ensures we capture data when data_valid is high
+    // Data buffer write enable signals - capture data when data_valid is high
     assign i_data_buffer_wen[0] = (i_state == WAIT_DATA) & i_data_valid & (i_word_count == 3'b000);
     assign i_data_buffer_wen[1] = (i_state == WAIT_DATA) & i_data_valid & (i_word_count == 3'b001);
     assign i_data_buffer_wen[2] = (i_state == WAIT_DATA) & i_data_valid & (i_word_count == 3'b010);
@@ -160,37 +163,18 @@ module cache_controller(
     assign i_write_cache = (i_state == DONE);
     assign i_write_tag = (i_state == DONE) & (i_write_word_count == 3'b111);
 
-    wire way_select = i_addr_reg[0]; 
+    // Determine way select based on address
+    wire way_select = i_addr_reg[0];
     
+    // Generate block enable signals for way selection
     assign i_block_enable = (i_write_cache) ? 
                            (way_select ? 
                              (1 << {i_addr_reg[9:4], 1'b1}) : // Way 1
                              (1 << {i_addr_reg[9:4], 1'b0})   // Way 0
                            ) : 128'b0;
                            
+    // Generate word enable signals for the specific word being written
     assign i_word_enable = (i_write_cache) ? (1 << i_write_word_count) : 8'b0;
-
-    // Data array for updating cache on miss
-    DataArray i_data_array(
-        .clk(clk), 
-        .rst(~rst_n), 
-        .DataIn(i_cache_data_in),  
-        .Write(i_write_cache), 
-        .BlockEnable(i_block_enable), 
-        .WordEnable(i_word_enable), 
-        .DataOut() // Not used here
-    );
-
-    // Metadata array for updating tag when cache miss is resolved
-    MetaDataArray i_tag_array(
-        .clk(clk), 
-        .rst(~rst_n), 
-        .DataIn({1'b1, 1'b0, i_addr_reg[15:10]}),  // Valid bit, LRU bit, Tag
-        .Write(i_write_tag), 
-        .BlockEnable(i_block_enable), 
-        .DataOut()  // Not used for write
-    );
-	
     
     // Indicate when instruction cache is handling a miss (stall)
     assign instr_invalid = (i_state != IDLE);
@@ -205,165 +189,6 @@ module cache_controller(
 		.data_in(mem_write_data),
 		.data_out(mem_data)
 	);
-
-
-
-
-///////////////////////////////////////////////////
-
-/*
-//D-cache Internal signals
-    wire data_valid;
-    wire enable, enable_mem_read, cache_write_en, addr_reg_en, data_out_en;
-    wire write_cache, write_tag;
-    wire [2:0] state, state_next;
-    wire [127:0] block_enable;
-    wire [7:0] word_enable;
-	wire [2:0] write_word_count, write_word_count_next;
-    wire write_word_count_en;
-	wire [15:0] addr_reg;
-	wire [2:0] word_count, word_count_next;
-    wire word_count_en;
-	wire [15:0] data_buffer [7:0];    
-    wire [7:0] data_buffer_wen;
-    wire [15:0] curr_mem_addr;
-    wire [15:0] mem_data_out;
-	wire [15:0] cache_data_in;
-	//D-cache FSM
-    dff state_ff [2:0] (.clk(clk), 
-                      .rst(~rst_n), 
-                      .wen(1'b1), 
-                      .d(state_next), 
-                      .q(state));
-
-  
-    
-
-    dff word_count_ff [2:0] (.clk(clk), 
-                          .rst(~rst_n), 
-                          .wen(word_count_en), 
-                          .d(word_count_next), 
-                          .q(word_count));
-
- 
-    
-
-    dff addr_reg_ff [15:0] (.clk(clk),     //keeps track of addr so can see if it is grabbing it multiple times
-                          .rst(~rst_n), 
-                          .wen(addr_reg_en), 
-                          .d(mem_addr),     
-                          .q(addr_reg));
-
-
-    
-
-    dff data_buffer_ff0 [15:0] (.clk(clk),.rst(~rst_n),.wen(data_buffer_wen[0]),.d(mem_data_out),.q(data_buffer[0]));
-    dff data_buffer_ff1 [15:0] (.clk(clk),.rst(~rst_n),.wen(data_buffer_wen[1]),.d(mem_data_out),.q(data_buffer[1]));
-    dff data_buffer_ff2 [15:0] (.clk(clk),.rst(~rst_n),.wen(data_buffer_wen[2]),.d(mem_data_out),.q(data_buffer[2]));
-    dff data_buffer_ff3 [15:0] (.clk(clk),.rst(~rst_n),.wen(data_buffer_wen[3]),.d(mem_data_out),.q(data_buffer[3]));
-    dff data_buffer_ff4 [15:0] (.clk(clk),.rst(~rst_n),.wen(data_buffer_wen[4]),.d(mem_data_out),.q(data_buffer[4]));
-    dff data_buffer_ff5 [15:0] (.clk(clk),.rst(~rst_n),.wen(data_buffer_wen[5]),.d(mem_data_out),.q(data_buffer[5]));
-    dff data_buffer_ff6 [15:0] (.clk(clk),.rst(~rst_n),.wen(data_buffer_wen[6]),.d(mem_data_out),.q(data_buffer[6]));
-    dff data_buffer_ff7 [15:0] (.clk(clk),.rst(~rst_n),.wen(data_buffer_wen[7]),.d(mem_data_out),.q(data_buffer[7]));
-
-    
-
-    
-  
-    assign curr_mem_addr = {addr_reg[15:3], word_count};   
-
-    memory4c memory_read(
-        .clk(clk),
-        .rst(~rst_n),
-        .enable(enable_mem_read),
-        .addr(curr_mem_addr),
-        .wr(1'b0),    // Always reading during miss handling
-        .data_in(16'h0),
-        .data_out(mem_data_out),
-        .data_valid(data_valid)
-    );
-
- 
-    assign state_next = (state == IDLE && miss) ? REQUEST :                       
-                      (state == REQUEST) ? WAIT_DATA :                            // Issue memory request
-                      (state == WAIT_DATA && data_valid) ? UPDATE_CACHE :        
-                      (state == UPDATE_CACHE && word_count < 3'b111) ? REQUEST :  
-                      (state == UPDATE_CACHE && word_count == 3'b111) ? DONE :    // All words received
-                      (state == DONE && write_word_count == 3'b111) ? IDLE :      
-                      state;
-
-
-    assign enable_mem_read = (state == REQUEST); 
-    assign addr_reg_en = (state == IDLE) & miss;  
-
-    assign word_count_en = ((state == IDLE) & miss) | (state == UPDATE_CACHE);
-    assign word_count_next = (state == IDLE) ? 3'b000 : 
-                           (state == UPDATE_CACHE) ? (word_count + 1'b1) : word_count;
-
-
-    assign data_buffer_wen[0] = (state == UPDATE_CACHE) & data_valid & (word_count == 3'b000);
-    assign data_buffer_wen[1] = (state == UPDATE_CACHE) & data_valid & (word_count == 3'b001);
-    assign data_buffer_wen[2] = (state == UPDATE_CACHE) & data_valid & (word_count == 3'b010);
-    assign data_buffer_wen[3] = (state == UPDATE_CACHE) & data_valid & (word_count == 3'b011);
-    assign data_buffer_wen[4] = (state == UPDATE_CACHE) & data_valid & (word_count == 3'b100);
-    assign data_buffer_wen[5] = (state == UPDATE_CACHE) & data_valid & (word_count == 3'b101);
-    assign data_buffer_wen[6] = (state == UPDATE_CACHE) & data_valid & (word_count == 3'b110);
-    assign data_buffer_wen[7] = (state == UPDATE_CACHE) & data_valid & (word_count == 3'b111);
-
-
-
-
-    dff write_word_ff [2:0] (.clk(clk),
-                           .rst(~rst_n),
-                           .wen(write_word_count_en),
-                           .d(write_word_count_next),
-                           .q(write_word_count));
-
-    assign write_word_count_en = (state == DONE);
-    assign write_word_count_next = (state == UPDATE_CACHE && word_count == 3'b111) ? 3'b000 :
-                                 (state == DONE) ? (write_word_count + 1'b1) : write_word_count;
-
-    
-    
-    assign cache_data_in = (write_word_count == 3'b000) ? data_buffer[0] :
-                          (write_word_count == 3'b001) ? data_buffer[1] :
-                          (write_word_count == 3'b010) ? data_buffer[2] :
-                          (write_word_count == 3'b011) ? data_buffer[3] :
-                          (write_word_count == 3'b100) ? data_buffer[4] :
-                          (write_word_count == 3'b101) ? data_buffer[5] :
-                          (write_word_count == 3'b110) ? data_buffer[6] :
-                                                      data_buffer[7];
-
-   
-    assign write_cache = (state == DONE);                 
-    assign write_tag = (state == DONE) & (write_word_count == 3'b111); 
-
-
-    assign block_enable = write_cache ? (1 << addr_reg[9:3]) : 128'b0;
-    assign word_enable = write_cache ? (1 << write_word_count) : 8'b0;  // One-hot for current word
-
-   
-    DataArray data_array(
-        .clk(clk), 
-        .rst(~rst_n), 
-        .DataIn(cache_data_in),  
-        .Write(write_cache), 
-        .BlockEnable(block_enable), 
-        .WordEnable(word_enable), 
-        .DataOut(mem_data)
-    );
-
-   
-    MetaDataArray tag_array(
-        .clk(clk), 
-        .rst(~rst_n), 
-        .DataIn({addr_reg[15:10], 1'b1, 1'b0}),  
-        .Write(write_tag), 
-        .BlockEnable(block_enable), 
-        .DataOut()  // Not used for write
-    );
-	assign mem_invalid = (state != IDLE);
-    */
     
 	assign mem_invalid = 1'b0;
 
