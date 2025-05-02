@@ -31,8 +31,8 @@ wire [7:0] Sum;
 // addsub_4bit cg(.A(rs[7:4]), .B(rt[7:4]), .Sum(out_cg_raw), .Ovfl(cg_ovfl), .sub(1'b0));
 // addsub_4bit dh(.A(rs[3:0]), .B(rt[3:0]), .Sum(out_dh_raw), .Ovfl(dh_ovfl), .sub(1'b0));
 //addsub_4bit is super ugly to write the way things are
-wire [3:0] out_ae_raw, out_bf_raw, out_cg_raw, out_dh_raw;
-wire       ae_ovfl,    bf_ovfl,    cg_ovfl,    dh_ovfl;
+// wire [3:0] out_ae_raw, out_bf_raw, out_cg_raw, out_dh_raw;
+// wire       ae_ovfl,    bf_ovfl,    cg_ovfl,    dh_ovfl;
 
 wire signed [3:0] rs_ae = rs[15:12];
 wire signed [3:0] rt_ae = rt[15:12];

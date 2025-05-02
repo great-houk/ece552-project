@@ -1,0 +1,70 @@
+# Read files and set them up
+read_file -format sverilog {\
+ ./cache/cache-controller.v\
+ ./cache/cache.v\
+ ./cache/DataArray.v\
+ ./cache/MetaDataArray.v\
+ ./cpu/cpu.v\
+ ./decode-stage/decode_stage.v\
+ ./detection-unit/detection_unit.v\
+ ./exectute-stage/Shifter.v\
+ ./exectute-stage/addsub_4bit.v\
+ ./exectute-stage/cla-parts.v\
+ ./exectute-stage/cla-reduction.v\
+ ./exectute-stage/execute_stage.v\
+ ./exectute-stage/paddsb.v\
+ ./fetch-stage/cla-parts.v\
+ ./fetch-stage/fetch.v\
+ ./memory/memory.v\
+ ./memory/multicyle_memory.v\
+ ./memory-stage/memory_stage.v\
+ ./register-file/register_file.v\
+ ./ultilities/D-Flip-Flop.v\
+ ./writeback-stage/writeback_stage.v\
+}
+set current_design cpu
+link
+
+# Create clock
+create_clock -name "clk" -period 10 clk
+
+# Make sure it leaves the clock alone
+set_dont_touch_network [find port clk]
+
+# Make sure it doesn't touch rst_n either, bc it's also a large network
+set_dont_touch_network [get_net iRST/rst_n]
+
+# Make a collection of inputs that aren't clock
+set prim_inputs [remove_from_collection [all_inputs] [find port clk]]
+
+# Set those inputs to have a delay of 0.4ns
+set_input_delay -clock clk 0.4 $prim_inputs
+
+# Set the output delay of everything to 0.4ns
+set_output_delay -clock clk 0.4 [all_outputs]
+
+# Set the driving cell model
+set_driving_cell -lib_cell NAND2X2_LVT -library saed32lvt_tt0p85v25c $prim_inputs
+
+# Set the load to 0.1pf
+set_load 0.1 [all_outputs]
+
+# Set wire load model
+set_wire_load_model -name 16000 -library saed32lvt_tt0p85v25c
+
+# Set the max transition time to 0.15ns
+set_max_transition 0.15 [current_design]
+
+# Compile
+compile -map_effort medium
+
+# Set clock uncertainty and make it fix it
+set_clock_uncertainty 0.15 clk
+set_fix_hold clk
+
+# Flatten and compile again
+ungroup -all -flatten
+compile -map_effort medium
+
+# Output reports and gate level Verilog
+# tbd

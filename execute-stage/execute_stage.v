@@ -1,27 +1,29 @@
+`default_nettype none
+
 module execute_stage(
 	// Inputs
-	input clk, rst_n, stall,
-	input [15:0] reg_rs, reg_rt, imm, pc_plus2,
-	input alu_src1, alu_src2,
-	input [3:0] alu_op,
-	input [15:0] m_alu_result, w_reg_write_data,
-	input [1:0] ex_ex_forwarding, ex_mem_forwarding,
+	input wire clk, rst_n, stall,
+	input wire [15:0] reg_rs, reg_rt, imm, pc_plus2,
+	input wire alu_src1, alu_src2,
+	input wire [3:0] alu_op,
+	input wire [15:0] m_alu_result, w_reg_write_data,
+	input wire [1:0] ex_ex_forwarding, ex_mem_forwarding,
 	// Passthrough
-	input [3:0] d_rd, d_rs, d_rt,
-	input d_mem_write_en, d_mem_read_en,
-	input d_reg_write_en, d_reg_write_src,
-	input [15:0] d_pc_plus2,
-	input d_halt,
+	input wire [3:0] d_rd, d_rs, d_rt,
+	input wire d_mem_write_en, d_mem_read_en,
+	input wire d_reg_write_en, d_reg_write_src,
+	input wire [15:0] d_pc_plus2,
+	input wire d_halt,
 	// Outputs
 	output reg [15:0] alu_result,
-	output [2:0] flags, // nzv
-	output flag_update,
+	output wire [2:0] flags, // nzv
+	output wire flag_update,
 	// Passthrough
-	output [3:0] e_rd, e_rs, e_rt,
-	output [15:0] e_reg_rt,
-	output e_mem_write_en, e_mem_read_en,
-	output e_reg_write_en, e_reg_write_src,
-	output e_halt
+	output wire [3:0] e_rd, e_rs, e_rt,
+	output wire [15:0] e_reg_rt,
+	output wire e_mem_write_en, e_mem_read_en,
+	output wire e_reg_write_en, e_reg_write_src,
+	output wire e_halt
 );
 	// Input dffs
 	wire [15:0] reg_rs_forward, reg_rt_forward;
@@ -163,7 +165,7 @@ module execute_stage(
 	// 	.sum(adder_res),
 	// 	.cout(adder_cout)
 	// );
-	assign adder_cout = alu_src1_data + (alu_op_ff[0] ? (~alu_src2_data) : (alu_src2_data)) + alu_op_ff[0];
+	assign {adder_cout, adder_res} = alu_src1_data + (alu_op_ff[0] ? (~alu_src2_data) : (alu_src2_data)) + alu_op_ff[0];
 
 	assign should_sat = (alu_src1_data[15] == (alu_src2_data[15] ^ alu_op_ff[0])) && (alu_src1_data[15] != adder_res[15]);
 	assign adder_sat = should_sat ? (adder_res[15] ? 16'h7FFF : 16'h8000) : adder_res;
@@ -208,7 +210,7 @@ module execute_stage(
 	);
 
 	// Parallel Adder
-	// wire [15:0] psa_adder_res;
+	wire [15:0] psa_adder_res;
 	// PSA_16bit PSA(
 	// 	.A(alu_src1_data),
 	// 	.B(alu_src2_data),
@@ -254,3 +256,5 @@ module execute_stage(
 		.wen(~stall)
 	);
 endmodule
+
+`default_nettype wire
