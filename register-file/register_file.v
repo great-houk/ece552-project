@@ -1,47 +1,3 @@
-
-module ReadDecoder_4_16(
-	input [3:0] RegId,
-	output [15:0] Wordline
-);
-	Shifter shifter(
-		.Shift_Out(Wordline),
-		.Shift_In(16'b1),
-		.Shift_Val(RegId),
-		.Mode(2'b00)
-	);
-endmodule
-
-module WriteDecoder_4_16(input [3:0] RegId, input WriteReg, output [15:0] Wordline);
-	Shifter shifter(
-		.Shift_Out(Wordline),
-		.Shift_In({15'b0, WriteReg}),
-		.Shift_Val(RegId),
-		.Mode(2'b00)
-	);
-endmodule
-
-module BitCell(
-	input clk, rst,
-	input D, WriteEnable, ReadEnable1, ReadEnable2,
-	inout Bitline1, Bitline2
-);
-	dff ff(.q(Q), .d(D), .wen(WriteEnable), .clk(clk), .rst(rst));
-	assign Bitline1 = ReadEnable1 ? Q : 1'bz;
-	assign Bitline2 = ReadEnable2 ? Q : 1'bz;
-endmodule
-
-module Register(
-	input clk, rst,
-	input [15:0] D,
-	input WriteReg, ReadEnable1, ReadEnable2,
-	inout [15:0] Bitline1, Bitline2
-);
-	wire [15:0] read1, read2;
-	BitCell bitcells [15:0] (clk, rst, D, WriteReg, ReadEnable1, ReadEnable2, read1, read2);
-	assign Bitline1 = (WriteReg & ReadEnable1) ? D : read1;
-	assign Bitline2 = (WriteReg & ReadEnable2) ? D : read2;
-endmodule
-
 module RegisterFile(
 	input clk, rst,
 	input [3:0] SrcReg1, SrcReg2, DstReg,
@@ -49,22 +5,23 @@ module RegisterFile(
 	input WriteReg,
 	inout [15:0] SrcData1, SrcData2
 );
-	wire [15:0] read_wordline1, read_wordline2, write_wordline;
-	wire [15:0] bitline1, bitline2;
+	reg [15:0] regs [15:0];
 
-	ReadDecoder_4_16 read_decoder1(SrcReg1, read_wordline1);
-	ReadDecoder_4_16 read_decoder2(SrcReg2, read_wordline2);
-	WriteDecoder_4_16 write_decoder(DstReg, WriteReg, write_wordline);
+	integer i;
+	always @(posedge clk or posedge rst) begin
+		if (rst) begin
+			// Reset all registers to 0
+			for (i = 0; i < 16; i = i + 1) begin
+				regs[i] <= 16'b0;
+			end
+		end else if (WriteReg && DstReg != 4'b0000) begin
+			// Write data to the destination register if it's not zero
+			regs[DstReg] <= DstData;
+		end
+	end
 
-	Register regs [15:1] (
-		.clk(clk), .rst(rst),
-		.D(DstData),
-		.WriteReg(write_wordline[15:1]), .ReadEnable1(read_wordline1[15:1]), .ReadEnable2(read_wordline2[15:1]),
-		.Bitline1(bitline1), .Bitline2(bitline2)
-	);
-
-	assign SrcData1 = read_wordline1[0] ? 16'h0: bitline1;
-	assign SrcData2 = read_wordline2[0] ? 16'h0: bitline2;
+	assign SrcData1 = (DstReg == SrcReg1 && WriteReg) ? DstData : regs[SrcReg1];
+	assign SrcData2 = (DstReg == SrcReg2 && WriteReg) ? DstData : regs[SrcReg2];
 endmodule
 
 module RegisterFile_tb();

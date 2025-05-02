@@ -1,19 +1,28 @@
-//Tag Array of 128  blocks
-//Each block will have 1 byte
-//BlockEnable is one-hot
-//WriteEnable is one on writes and zero on reads
+module MetaDataArray(
+	input clk,
+	input rst,
+	input [7:0] DataIn,
+	input Write,
+	input [6:0] BlockEnable,
+	output [7:0] DataOut
+);
+	// Memory array
+	reg [7:0] mem [0:127]; // 128 Blocks, each 16 words
 
-module MetaDataArray(input clk, input rst, input [7:0] DataIn, input Write, input [127:0] BlockEnable, output [7:0] DataOut);
-	MBlock Mblk[127:0]( .clk(clk), .rst(rst), .Din(DataIn), .WriteEnable(Write), .Enable(BlockEnable), .Dout(DataOut));
-endmodule
+	// Write operation
+	integer i;
+	always @(posedge clk or posedge rst) begin
+		if (rst) begin
+			// Reset all memory locations to 0
+			for (i = 0; i < 128; i = i + 1) begin
+				mem[i] <= 8'b0;
+			end
+		end else if (Write) begin
+			// Write data to the specified block and word locations
+			mem[BlockEnable] <= DataIn;
+		end
+	end
 
-module MBlock( input clk,  input rst, input [7:0] Din, input WriteEnable, input Enable, output [7:0] Dout);
-	MCell mc[7:0]( .clk(clk), .rst(rst), .Din(Din[7:0]), .WriteEnable(WriteEnable), .Enable(Enable), .Dout(Dout[7:0]));
-endmodule
-
-module MCell( input clk,  input rst, input Din, input WriteEnable, input Enable, output Dout);
-	wire q;
-	assign Dout = (Enable) ? q :'bz;
-	dff dffm(.q(q), .d(Din), .wen(Enable & WriteEnable), .clk(clk), .rst(rst));
+	assign DataOut = mem[BlockEnable];
 endmodule
 
