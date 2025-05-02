@@ -7,19 +7,19 @@ read_file -format sverilog {\
  ./cpu/cpu.v\
  ./decode-stage/decode_stage.v\
  ./detection-unit/detection_unit.v\
- ./exectute-stage/Shifter.v\
- ./exectute-stage/addsub_4bit.v\
- ./exectute-stage/cla-parts.v\
- ./exectute-stage/cla-reduction.v\
- ./exectute-stage/execute_stage.v\
- ./exectute-stage/paddsb.v\
+ ./execute-stage/Shifter.v\
+ ./execute-stage/addsub_4bit.v\
+ ./execute-stage/cla-parts.v\
+ ./execute-stage/cla-reduction.v\
+ ./execute-stage/execute_stage.v\
+ ./execute-stage/paddsb.v\
  ./fetch-stage/cla-parts.v\
  ./fetch-stage/fetch.v\
  ./memory/memory.v\
- ./memory/multicyle_memory.v\
+ ./memory/multicycle_memory.v\
  ./memory-stage/memory_stage.v\
  ./register-file/register_file.v\
- ./ultilities/D-Flip-Flop.v\
+ ./utilities/D-Flip-Flop.v\
  ./writeback-stage/writeback_stage.v\
 }
 set current_design cpu
