@@ -1,29 +1,32 @@
-//Data Array of 128 cache blocks
-//Each block will have 8 words
-//BlockEnable and WordEnable are one-hot
-//WriteEnable is one on writes and zero on reads
 
-module DataArray(input clk, input rst, input [15:0] DataIn, input Write, input [127:0] BlockEnable, input [7:0] WordEnable, output [15:0] DataOut);
-	Block blk[127:0]( .clk(clk), .rst(rst), .Din(DataIn), .WriteEnable(Write), .Enable(BlockEnable), .WordEnable(WordEnable), .Dout(DataOut));
-endmodule
+module DataArray(
+	input clk,
+	input rst,
+	input [15:0] DataIn,
+	input Write,
+	input [6:0] BlockEnable,
+	input [2:0] WordEnable,
+	output [15:0] DataOut
+);
+	// Memory array
+	reg [15:0] mem [0:127][0:15]; // 128 Blocks, each 16 words
 
-//64 byte (8 word) cache block
-module Block( input clk,  input rst, input [15:0] Din, input WriteEnable, input Enable, input [7:0] WordEnable, output [15:0] Dout);
-	wire [7:0] WordEnable_real;
-	assign WordEnable_real = {8{Enable}} & WordEnable; //Only for the enabled cache block, you enable the specific word
-	DWord dw[7:0]( .clk(clk), .rst(rst), .Din(Din), .WriteEnable(WriteEnable), .Enable(WordEnable_real), .Dout(Dout));
-endmodule
+	// Write operation
+	integer i, j;
+	always @(posedge clk or posedge rst) begin
+		if (rst) begin
+			// Reset all memory locations to 0
+			for (i = 0; i < 128; i = i + 1) begin
+				for (j = 0; j < 16; j = j + 1) begin
+					mem[i][j] <= 16'b0;
+				end
+			end
+		end else if (Write) begin
+			// Write data to the specified block and word locations
+			mem[BlockEnable][WordEnable] <= DataIn;
+		end
+	end
 
-
-//Each word has 16 bits
-module DWord( input clk,  input rst, input [15:0] Din, input WriteEnable, input Enable, output [15:0] Dout);
-	DCell dc[15:0]( .clk(clk), .rst(rst), .Din(Din[15:0]), .WriteEnable(WriteEnable), .Enable(Enable), .Dout(Dout[15:0]));
-endmodule
-
-
-module DCell( input clk,  input rst, input Din, input WriteEnable, input Enable, output Dout);
-	wire q;
-	assign Dout = (Enable) ? q :'bz;
-	dff dffd(.q(q), .d(Din), .wen(Enable & WriteEnable), .clk(clk), .rst(rst));
+	assign DataOut = mem[BlockEnable][WordEnable];
 endmodule
 

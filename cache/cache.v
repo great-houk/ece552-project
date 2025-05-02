@@ -11,23 +11,11 @@ module cache (
 	output wire invalid
 );
 	wire [4:0] tag;
-	wire [127:0] block_enable;
-	wire [7:0] word_enable;
-	// assign block_enable = 128'b1 << addr[10:4];
-	wire [127:0] block_enable_hot;
-	one_hot_128 block_shifter (
-		.sel(addr[10:4]),
-		.one_hot(block_enable_hot));
-	assign block_enable = block_enable_hot;
-
-	// assign word_enable = 8'b1 << addr[3:1];
-	wire [7:0] word_enable_hot;
-	one_hot_8 word_shifter (
-		.sel(addr[3:1]),
-		.one_hot(word_enable_hot));
-	assign word_enable = word_enable_hot;
-
+	wire [6:0] block_enable;
+	wire [2:0] word_enable;
 	assign tag = addr[15:11];
+	assign block_enable = addr[10:4];
+	assign word_enable = addr[3:1];
 
 	// Cache Sets
 	wire [15:0] set0_out, set1_out;
