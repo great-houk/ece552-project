@@ -17,5 +17,6 @@ module fetch_stage (
 	dff pc_dff [15:0] (.q(pc_out), .d(next_pc), .wen(should_inc), .clk(clk), .rst(~rst_n));
 
 	// Generate PC+2
-	cla_16bit pc_plus2_add(.a(pc_out), .b(16'h2), .cin(1'b0), .sum(pc_plus2), .cout());
+	// cla_16bit pc_plus2_add(.a(pc_out), .b(16'h2), .cin(1'b0), .sum(pc_plus2), .cout());
+	assign pc_plus2 = pc_out + 2'd2;
 endmodule

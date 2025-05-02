@@ -156,24 +156,48 @@ module execute_stage(
 	// Add/sub
 	wire [15:0] adder_res, adder_sat;
 	wire adder_cout, should_sat;
-	cla_16bit cla(
-		.a(alu_src1_data),
-		.b(alu_op_ff[0] ? (~alu_src2_data) : (alu_src2_data)),
-		.cin(alu_op_ff[0]),
-		.sum(adder_res),
-		.cout(adder_cout)
-	);
+	// cla_16bit cla(
+	// 	.a(alu_src1_data),
+	// 	.b(alu_op_ff[0] ? (~alu_src2_data) : (alu_src2_data)),
+	// 	.cin(alu_op_ff[0]),
+	// 	.sum(adder_res),
+	// 	.cout(adder_cout)
+	// );
+	assign adder_cout = alu_src1_data + (alu_op_ff[0] ? (~alu_src2_data) : (alu_src2_data)) + alu_op_ff[0];
+
 	assign should_sat = (alu_src1_data[15] == (alu_src2_data[15] ^ alu_op_ff[0])) && (alu_src1_data[15] != adder_res[15]);
 	assign adder_sat = should_sat ? (adder_res[15] ? 16'h7FFF : 16'h8000) : adder_res;
 
 	// Shifter
+	// wire [15:0] shifter_res;
+	// Shifter shifter(
+	// 	.Shift_Out(shifter_res),
+	// 	.Shift_In(alu_src1_data),
+	// 	.Shift_Val(alu_src2_data[3:0]),
+	// 	.Mode(alu_op_ff[1:0])
+	// );
+	//This is a more complicated implementation of the shifter, but SHOULD decrease area(I think)
+	wire [15:0] shift_left_result;
+	wire [15:0] shift_arith_result;
+	wire [15:0] shift_rotate_result;
 	wire [15:0] shifter_res;
-	Shifter shifter(
-		.Shift_Out(shifter_res),
-		.Shift_In(alu_src1_data),
-		.Shift_Val(alu_src2_data[3:0]),
-		.Mode(alu_op_ff[1:0])
-	);
+
+	wire [3:0] shift_amt = alu_src2_data[3:0];  // 4-bit shift amount
+
+	// Logical Left Shift
+	assign shift_left_result = alu_src1_data << shift_amt;
+
+	// Arithmetic Right Shift (preserve sign bit)
+	assign shift_arith_result = $signed(alu_src1_data) >>> shift_amt;
+
+	// Rotate Right (custom implementation)
+	assign shift_rotate_result = (alu_src1_data >> shift_amt) | (alu_src1_data << (16 - shift_amt));
+
+	// Shifter result selected by Mode (ternary)
+	assign shifter_res = (alu_op_ff[1:0] == 2'b00) ? shift_left_result :
+						(alu_op_ff[1:0] == 2'b01) ? shift_arith_result :
+						(alu_op_ff[1:0] == 2'b10) ? shift_rotate_result :
+						16'hXXXX;
 
 	// Reduce
 	wire [15:0] reduction_res;
@@ -184,12 +208,16 @@ module execute_stage(
 	);
 
 	// Parallel Adder
-	wire [15:0] psa_adder_res;
-	PSA_16bit PSA(
-		.A(alu_src1_data),
-		.B(alu_src2_data),
-		.Sum(psa_adder_res)
-	);
+	// wire [15:0] psa_adder_res;
+	// PSA_16bit PSA(
+	// 	.A(alu_src1_data),
+	// 	.B(alu_src2_data),
+	// 	.Sum(psa_adder_res)
+	// );
+	assign psa_adder_res[3:0]   = alu_src1_data[3:0]   + alu_src2_data[3:0];
+	assign psa_adder_res[7:4]   = alu_src1_data[7:4]   + alu_src2_data[7:4];
+	assign psa_adder_res[11:8]  = alu_src1_data[11:8]  + alu_src2_data[11:8];
+	assign psa_adder_res[15:12] = alu_src1_data[15:12] + alu_src2_data[15:12];
 
 	// Calculate ALU result
 	always @(*) begin

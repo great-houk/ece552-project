@@ -26,10 +26,34 @@ wire [7:0] cla_out_cgdh;
 wire [7:0] carry;
 wire [7:0] Sum;
 
-addsub_4bit ae(.A(rs[15:12]), .B(rt[15:12]), .Sum(out_ae_raw), .Ovfl(ae_ovfl), .sub(1'b0));
-addsub_4bit bf(.A(rs[11:8]), .B(rt[11:8]), .Sum(out_bf_raw), .Ovfl(bf_ovfl), .sub(1'b0));
-addsub_4bit cg(.A(rs[7:4]), .B(rt[7:4]), .Sum(out_cg_raw), .Ovfl(cg_ovfl), .sub(1'b0));
-addsub_4bit dh(.A(rs[3:0]), .B(rt[3:0]), .Sum(out_dh_raw), .Ovfl(dh_ovfl), .sub(1'b0));
+// addsub_4bit ae(.A(rs[15:12]), .B(rt[15:12]), .Sum(out_ae_raw), .Ovfl(ae_ovfl), .sub(1'b0));
+// addsub_4bit bf(.A(rs[11:8]), .B(rt[11:8]), .Sum(out_bf_raw), .Ovfl(bf_ovfl), .sub(1'b0));
+// addsub_4bit cg(.A(rs[7:4]), .B(rt[7:4]), .Sum(out_cg_raw), .Ovfl(cg_ovfl), .sub(1'b0));
+// addsub_4bit dh(.A(rs[3:0]), .B(rt[3:0]), .Sum(out_dh_raw), .Ovfl(dh_ovfl), .sub(1'b0));
+//addsub_4bit is super ugly to write the way things are
+wire [3:0] out_ae_raw, out_bf_raw, out_cg_raw, out_dh_raw;
+wire       ae_ovfl,    bf_ovfl,    cg_ovfl,    dh_ovfl;
+
+wire signed [3:0] rs_ae = rs[15:12];
+wire signed [3:0] rt_ae = rt[15:12];
+wire signed [3:0] rs_bf = rs[11:8];
+wire signed [3:0] rt_bf = rt[11:8];
+wire signed [3:0] rs_cg = rs[7:4];
+wire signed [3:0] rt_cg = rt[7:4];
+wire signed [3:0] rs_dh = rs[3:0];
+wire signed [3:0] rt_dh = rt[3:0];
+
+assign out_ae_raw = rs_ae + rt_ae;
+assign out_bf_raw = rs_bf + rt_bf;
+assign out_cg_raw = rs_cg + rt_cg;
+assign out_dh_raw = rs_dh + rt_dh;
+
+assign ae_ovfl = (~(rs_ae[3] ^ rt_ae[3])) & (rs_ae[3] ^ out_ae_raw[3]);
+assign bf_ovfl = (~(rs_bf[3] ^ rt_bf[3])) & (rs_bf[3] ^ out_bf_raw[3]);
+assign cg_ovfl = (~(rs_cg[3] ^ rt_cg[3])) & (rs_cg[3] ^ out_cg_raw[3]);
+assign dh_ovfl = (~(rs_dh[3] ^ rt_dh[3])) & (rs_dh[3] ^ out_dh_raw[3]);
+
+//end addsub_4bit replacement
 
 assign out_ae = {ae_ovfl, out_ae_raw[3:0]};
 assign out_bf = {bf_ovfl, out_bf_raw[3:0]};

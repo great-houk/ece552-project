@@ -55,15 +55,9 @@ module cache_controller(
 							.wen(mem_4c_valid), 
 							.d(write_amount_next), 
 							.q(write_amount));
-	// For read_amount + 1
-    assign read_amount_next[0] = ~read_amount[0];
-    assign read_amount_next[1] = read_amount[1] ^ read_amount[0];
-    assign read_amount_next[2] = read_amount[2] ^ (read_amount[1] & read_amount[0]);
 
-    // For write_amount + 1
-    assign write_amount_next[0] = ~write_amount[0];
-    assign write_amount_next[1] = write_amount[1] ^ write_amount[0];
-    assign write_amount_next[2] = write_amount[2] ^ (write_amount[1] & write_amount[0]);
+	assign read_amount_next = read_amount + 1'b1;
+	assign write_amount_next = write_amount + 1'b1;
     
 	assign mem_4c_addr = 
 		(state_next == IDLE) ? mem_addr :
